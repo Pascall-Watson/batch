@@ -84,8 +84,8 @@ jobs:
             $guiOut = "BatchRvtGUI/bin/x64/Release"
             $res = Test-DirWithFiles $guiOut; if ($res) { $missing += $res }
 
-            # 3. Addin years 2015-2026 (directories + .addin files)
-            foreach ($year in 2015..2026) {
+            # 3. Addin years 2015-2027 (directories + .addin files)
+            foreach ($year in 2015..2027) {
               $addinDir = "BatchRvtAddin$year/bin/x64/Release"
               $res = Test-DirWithFiles $addinDir; if ($res) { $missing += $res }
               $addinFile = "BatchRvtAddin$year/BatchRvtAddin$year.addin"
