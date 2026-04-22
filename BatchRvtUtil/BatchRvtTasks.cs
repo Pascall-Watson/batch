@@ -204,6 +204,11 @@ public static class BatchRvtTasks
 
     private static RevitVersion.SupportedRevitVersion GetVersion(UseRevitVersion useRevitVersion)
     {
+        if (useRevitVersion == UseRevitVersion.RevitFileVersion)
+        {
+            return RevitVersion.GetMinimumInstalledRevitVersion();
+        }
+
         return (RevitVersion.SupportedRevitVersion)Enum.Parse(typeof(RevitVersion.SupportedRevitVersion), useRevitVersion.ToString());
     }
 
