@@ -46,11 +46,12 @@ echo   Done.
 echo.
 echo Creating new addin folder...
 echo   [addin folder path: %TargetAddinFolderPath%]
-mkdir %TargetAddinFolderPath%
+if not exist "%TargetAddinsDir%" mkdir "%TargetAddinsDir%"
+if not exist %TargetAddinFolderPath% mkdir %TargetAddinFolderPath%
 
 IF ERRORLEVEL 1 (
   echo ERROR: Could not create new addin folder!
-  exit
+  exit /b 1
 ) ELSE (
   echo   Done.
 )

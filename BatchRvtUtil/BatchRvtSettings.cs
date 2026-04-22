@@ -148,7 +148,7 @@ public class BatchRvtSettings : IPersistent
             Load(jobject);
             return true;
         }
-        catch (Exception e)
+        catch (Exception)
         {
             return false;
         }
@@ -173,7 +173,7 @@ public class BatchRvtSettings : IPersistent
 
             success = true;
         }
-        catch (Exception e)
+        catch (Exception)
         {
             success = false;
         }

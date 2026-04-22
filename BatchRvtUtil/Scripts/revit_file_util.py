@@ -129,12 +129,23 @@ def ToCloudPath(cloudProjectId, cloudModelId):
     cloudPath = ModelPathUtils.ConvertCloudGUIDsToCloudPath(cloudProjectGuid, cloudModelGuid)
     return cloudPath
 
+def _append_unique_region_candidate(candidates, candidate):
+    if candidate is None:
+        return
+    for existing in candidates:
+        if existing == candidate:
+            return
+    candidates.append(candidate)
+
 def ToCloudPath2021(cloudProjectId, cloudModelId):
     """
     Convert cloud project and model GUIDs to a cloud path with region support.
-    
-    Note: Uses cloud_region_util for region handling. Revit API currently only 
-    supports US and EMEA regions. Australia uses hardcoded string.
+
+    Region candidates are built from:
+    1) explicit user-region fallback order (US/EU/APAC),
+    2) complete configured region mapping,
+    3) runtime-discovered API regions (Revit 2027+),
+    while preserving compatibility with older Revit versions.
     
     Args:
         cloudProjectId: Project GUID (string or System.Guid)
@@ -143,19 +154,29 @@ def ToCloudPath2021(cloudProjectId, cloudModelId):
     Returns:
         ModelPath object for the cloud model
     """
-    cloudPath = None
     cloudProjectGuid = ToGuid(cloudProjectId)
     cloudModelGuid = ToGuid(cloudModelId)
-    
-    regionMapping = cloud_region_util.get_region_api_mapping()
 
-    for key, val in regionMapping.items():
+    regionMapping = cloud_region_util.get_region_api_mapping()
+    regionCandidates = []
+
+    for regionCode in cloud_region_util.GetFallbackOrder():
+        if regionCode in regionMapping:
+            _append_unique_region_candidate(regionCandidates, regionMapping[regionCode])
+
+    for regionValue in regionMapping.values():
+        _append_unique_region_candidate(regionCandidates, regionValue)
+
+    for discoveredRegion in cloud_region_util.GetDiscoveredApiRegions():
+        _append_unique_region_candidate(regionCandidates, discoveredRegion)
+
+    for regionValue in regionCandidates:
         try:
-            cloudPath = ModelPathUtils.ConvertCloudGUIDsToCloudPath(val, cloudProjectGuid, cloudModelGuid)
+            cloudPath = ModelPathUtils.ConvertCloudGUIDsToCloudPath(regionValue, cloudProjectGuid, cloudModelGuid)
             return cloudPath
-        except Exception as e:
+        except Exception:
             continue
-    
+
     return cloud_region_util.get_unrecognised_region_msg()
 
 def OpenNewLocal(application, modelPath, localModelPath, closeAllWorksets=False, worksetConfig=None, audit=False):

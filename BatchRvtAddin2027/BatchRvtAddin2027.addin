@@ -7,4 +7,9 @@
     <FullClassName>BatchRvt.Addin.Revit2027.BatchRvtAddinApplication</FullClassName>
     <VendorId>BATCHRVT</VendorId>
   </AddIn>
+  <ManifestSettings>
+    <!-- Optional isolation setting: set this to True to load in Revit's default context. -->
+    <UseRevitContext>False</UseRevitContext>
+    <ContextName>BatchRvt</ContextName>
+  </ManifestSettings>
 </RevitAddIns>

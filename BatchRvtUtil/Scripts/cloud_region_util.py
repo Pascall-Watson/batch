@@ -43,6 +43,82 @@ DEFAULT_REGION = "US"
 # Priority order for fallback attempts
 FALLBACK_ORDER = ["US", "EU", "APAC"]
 
+# Keywords used to infer region identity from dynamically discovered region names.
+REGION_CODE_KEYWORDS = {
+    "US": ["CLOUDREGIONUS", "UNITEDSTATES", "US", "USA", "AMERICA"],
+    "EU": ["CLOUDREGIONEMEA", "EMEA", "EUROPE", "EU", "UK", "GERMANY", "MIDDLE", "AFRICA"],
+    "APAC": ["APAC", "ASIA", "PACIFIC", "JAPAN", "INDIA", "SINGAPORE"],
+    "AUS": ["AUS", "AUSTRALIA"],
+}
+
+
+def _append_unique(values, value):
+    if value is None:
+        return
+    for existing in values:
+        if existing == value:
+            return
+    values.append(value)
+
+
+def _to_region_text(region_value):
+    try:
+        return str(region_value).upper()
+    except:
+        return ""
+
+
+def _get_model_path_utils():
+    clr.AddReference("RevitAPI")
+    from Autodesk.Revit.DB import ModelPathUtils
+    return ModelPathUtils
+
+
+def _try_get_all_cloud_regions(model_path_utils):
+    regions = []
+    if hasattr(model_path_utils, "GetAllCloudRegions"):
+        try:
+            discovered_regions = model_path_utils.GetAllCloudRegions()
+            if discovered_regions is not None:
+                for region in discovered_regions:
+                    _append_unique(regions, region)
+        except Exception:
+            pass
+    return regions
+
+
+def _try_get_legacy_cloud_regions(model_path_utils):
+    regions = []
+    if hasattr(model_path_utils, "CloudRegionUS"):
+        _append_unique(regions, model_path_utils.CloudRegionUS)
+    if hasattr(model_path_utils, "CloudRegionEMEA"):
+        _append_unique(regions, model_path_utils.CloudRegionEMEA)
+    return regions
+
+
+def _find_region_by_keywords(regions, keywords):
+    for region in regions:
+        region_text = _to_region_text(region)
+        for keyword in keywords:
+            if region_text == keyword or region_text.find(keyword) >= 0:
+                return region
+    return None
+
+
+def _find_region_for_code(regions, region_code):
+    keywords = REGION_CODE_KEYWORDS.get(region_code, [])
+    return _find_region_by_keywords(regions, keywords)
+
+
+def _get_discovered_regions():
+    model_path_utils = _get_model_path_utils()
+    regions = []
+    for region in _try_get_all_cloud_regions(model_path_utils):
+        _append_unique(regions, region)
+    for region in _try_get_legacy_cloud_regions(model_path_utils):
+        _append_unique(regions, region)
+    return regions
+
 
 def _get_revit_api_constants():
     """
@@ -52,11 +128,34 @@ def _get_revit_api_constants():
     Returns:
         tuple: (ModelPathUtils.CloudRegionUS, ModelPathUtils.CloudRegionEMEA)
     """
-    clr.AddReference("RevitAPI")
+    model_path_utils = _get_model_path_utils()
+    discovered_regions = _get_discovered_regions()
 
-    from Autodesk.Revit.DB import ModelPathUtils
+    us_region = model_path_utils.CloudRegionUS if hasattr(model_path_utils, "CloudRegionUS") else None
+    emea_region = model_path_utils.CloudRegionEMEA if hasattr(model_path_utils, "CloudRegionEMEA") else None
 
-    return ModelPathUtils.CloudRegionUS, ModelPathUtils.CloudRegionEMEA
+    if us_region is None:
+        us_region = _find_region_for_code(discovered_regions, "US")
+    if us_region is None and len(discovered_regions) > 0:
+        us_region = discovered_regions[0]
+
+    if emea_region is None:
+        emea_region = _find_region_for_code(discovered_regions, "EU")
+    if emea_region is None:
+        emea_region = us_region
+
+    return us_region, emea_region
+
+
+def GetDiscoveredApiRegions():
+    """
+    Returns all discoverable cloud regions from the active Revit API.
+
+    Returns:
+        list: Region constants/strings accepted by ConvertCloudGUIDsToCloudPath.
+    """
+    regions = _get_discovered_regions()
+    return regions[:]
 
 
 def get_region_api_mapping():
@@ -68,21 +167,33 @@ def get_region_api_mapping():
         dict: Mapping of region codes to API constants
     """
     cloud_region_us, cloud_region_emea = _get_revit_api_constants()
+    discovered_regions = _get_discovered_regions()
 
-    # Mapping of user-friendly region codes to actual Revit API constants
-    # Note: Revit API currently only supports US and EMEA regions
-    # APAC/Australia needs to be mapped to one of the available regions
-    return {
-        "US": cloud_region_us,  # Direct mapping
-        "EU": cloud_region_emea,  # Europe, Middle East, Africa -> EMEA (direct mapping)
-        "AUS": AUSTRALIA_REGION_STRING,  # Australia -> "AUS" (no official Revit API constant, using hardcoded string)
-    }
+    apac_region = _find_region_for_code(discovered_regions, "APAC")
+    aus_region = _find_region_for_code(discovered_regions, "AUS")
+
+    if apac_region is None:
+        apac_region = aus_region
+
+    if aus_region is None:
+        aus_region = apac_region if apac_region is not None else AUSTRALIA_REGION_STRING
+
+    region_mapping = {}
+    if cloud_region_us is not None:
+        region_mapping["US"] = cloud_region_us
+    if cloud_region_emea is not None:
+        region_mapping["EU"] = cloud_region_emea
+    if apac_region is not None:
+        region_mapping["APAC"] = apac_region
+    region_mapping["AUS"] = aus_region
+
+    return region_mapping
 
 
 def get_unrecognised_region_msg():
     region_mapping = get_region_api_mapping()
     msg = "ERROR: Could not establish a valid Cloud Model Path using the region values {}."
-    return msg.format(", ".join(region_mapping.keys()))
+    return msg.format(", ".join(sorted(region_mapping.keys())))
 
 
 def GetSupportedRegions():
@@ -124,10 +235,11 @@ def GetRevitApiRegion(regionCode):
     if regionCode is None:
         regionCode = DEFAULT_REGION
 
+    normalized_region_code = NormalizeRegionCode(regionCode)
     usRegion, euRegion = _get_revit_api_constants()
     regionMapping = get_region_api_mapping()
 
-    return regionMapping.get(regionCode.upper(), usRegion)
+    return regionMapping.get(normalized_region_code, usRegion)
 
 
 def NormalizeRegionCode(regionCode):
@@ -214,9 +326,9 @@ def GetApiRegionName(api_constant):
     """
     cloud_region_us, cloud_region_emea = _get_revit_api_constants()
 
-    if api_constant == cloud_region_us:
+    if cloud_region_us is not None and api_constant == cloud_region_us:
         return "CloudRegionUS"
-    elif api_constant == cloud_region_emea:
+    elif cloud_region_emea is not None and api_constant == cloud_region_emea:
         return "CloudRegionEMEA"
     elif api_constant == AUSTRALIA_REGION_STRING:
         return "{0} (hardcoded)".format(AUSTRALIA_REGION_STRING)
@@ -234,13 +346,8 @@ def IsDirectApiMapping(regionCode):
     Returns:
         bool: True if direct mapping, False if approximated
     """
-    if regionCode is None:
-        return True
-
-    regionCode = regionCode.upper()
-    # Only US and EU have direct mappings to available API constants
-    # APAC is not mapped directly (uses hardcoded string)
-    return regionCode in ["US", "EU"]
+    api_constant = GetRevitApiRegion(regionCode)
+    return api_constant != AUSTRALIA_REGION_STRING
 
 
 def GetMappingWarnings():
@@ -251,7 +358,7 @@ def GetMappingWarnings():
         list: List of warning messages for approximated regions
     """
     warnings = []
-    for regionCode in REGION_DESCRIPTIONS:
+    for regionCode in sorted(REGION_DESCRIPTIONS.keys()):
         api_constant = GetRevitApiRegion(regionCode)
         if api_constant == AUSTRALIA_REGION_STRING:
             warnings.append(
@@ -261,7 +368,6 @@ def GetMappingWarnings():
                     AUSTRALIA_REGION_STRING,
                 )
             )
-        # Note: Since we're only supporting US, EU, and APAC now, no other approximations to warn about
     return warnings
 
 

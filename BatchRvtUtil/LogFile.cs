@@ -207,7 +207,7 @@ public class LogFile
                 .Select(line => ReadLineAsPlainText(line, useUniversalTime))
                 .ToList();
         }
-        catch (Exception e)
+        catch (Exception)
         {
             return null;
         }
