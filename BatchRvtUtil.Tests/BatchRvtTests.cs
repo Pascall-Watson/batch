@@ -28,7 +28,6 @@ namespace BatchRvtUtil.Tests
 
         [Theory]
         [InlineData("16:30:13")]
-        [InlineData("16:30:13")]
         public void IsBatchRvtLine_ShouldReturnTrueOnCorrectLine(string line)
         {
             Assert.True(BatchRvt.IsBatchRvtLine(line));

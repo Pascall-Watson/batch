@@ -39,7 +39,11 @@ public static class BatchRvtTasks
         Revit2020 = 6,
         Revit2021 = 7,
         Revit2022 = 8,
-        Revit2023 = 9
+        Revit2023 = 9,
+        Revit2024 = 10,
+        Revit2025 = 11,
+        Revit2026 = 12,
+        Revit2027 = 13
     }
 
     public static string RunTask(
@@ -200,7 +204,12 @@ public static class BatchRvtTasks
 
     private static RevitVersion.SupportedRevitVersion GetVersion(UseRevitVersion useRevitVersion)
     {
-        return (RevitVersion.SupportedRevitVersion)Enum.Parse(typeof(UseRevitVersion), useRevitVersion.ToString());
+        if (useRevitVersion == UseRevitVersion.RevitFileVersion)
+        {
+            return RevitVersion.GetMinimumInstalledRevitVersion();
+        }
+
+        return (RevitVersion.SupportedRevitVersion)Enum.Parse(typeof(RevitVersion.SupportedRevitVersion), useRevitVersion.ToString());
     }
 
     private static string RunTask(

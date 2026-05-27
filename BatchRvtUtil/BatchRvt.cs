@@ -71,6 +71,7 @@ public static class BatchRvt
             { RevitVersion.SupportedRevitVersion.Revit2024, "BatchRvtAddin2024.addin" },
             { RevitVersion.SupportedRevitVersion.Revit2025, "BatchRvtAddin2025.addin" },
             { RevitVersion.SupportedRevitVersion.Revit2026, "BatchRvtAddin2026.addin" },
+            { RevitVersion.SupportedRevitVersion.Revit2027, "BatchRvtAddin2027.addin" },
         };
 
 
@@ -219,8 +220,10 @@ public static class BatchRvt
 
     public static bool IsBatchRvtAddinInstalled(RevitVersion.SupportedRevitVersion revitVersion)
     {
-        var revitAddinsBaseFolders = new[]
-            { Environment.SpecialFolder.CommonApplicationData, Environment.SpecialFolder.ApplicationData };
+        // Revit 2027+ changed the all-users addin location from ProgramData to ProgramFiles.
+        var revitAddinsBaseFolders = revitVersion >= RevitVersion.SupportedRevitVersion.Revit2027
+            ? new[] { Environment.SpecialFolder.ProgramFiles, Environment.SpecialFolder.ApplicationData }
+            : new[] { Environment.SpecialFolder.CommonApplicationData, Environment.SpecialFolder.ApplicationData };
 
         var revitAddinsFolderPaths = revitAddinsBaseFolders
             .Select(f => RevitVersion.GetRevitAddinsFolderPath(revitVersion, f)).ToList();

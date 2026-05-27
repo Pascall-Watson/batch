@@ -102,7 +102,7 @@ public class OptionalSetting<T> : Setting<T>
         {
             value = deserialize(jobject, propertyName);
         }
-        catch (Exception e)
+        catch (Exception)
         {
             // ignored
         }

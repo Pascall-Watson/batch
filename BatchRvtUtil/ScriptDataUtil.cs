@@ -108,7 +108,7 @@ namespace BatchRvtUtil
                     var jobject = JsonUtil.DeserializeFromJson(text);
                     this.persistentSettings.Load(jobject);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     return false;
                 }
@@ -132,7 +132,7 @@ namespace BatchRvtUtil
 
                     success = true;
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     success = false;
                 }
@@ -157,7 +157,7 @@ namespace BatchRvtUtil
                     scriptData = new ScriptData();
                     scriptData.Load(jobject);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     scriptData = null;
                 }
@@ -192,7 +192,7 @@ namespace BatchRvtUtil
                 }
                 return scriptDatas;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null; 
             }
@@ -227,7 +227,7 @@ namespace BatchRvtUtil
 
                 success = true;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 success = false;
             }
@@ -272,7 +272,7 @@ namespace BatchRvtUtil
 
                 success = true;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 success = false;
             }
@@ -290,7 +290,7 @@ namespace BatchRvtUtil
 
                 progressNumber = int.Parse(File.ReadAllText(fileInfo.FullName).Trim());
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 progressNumber = null;
             }

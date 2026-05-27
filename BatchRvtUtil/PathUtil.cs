@@ -76,15 +76,15 @@ public static class PathUtil
         {
             result = func();
         }
-        catch (UnauthorizedAccessException e)
+        catch (UnauthorizedAccessException)
         {
             // Do nothing.
         }
-        catch (PathTooLongException e)
+        catch (PathTooLongException)
         {
             // Do nothing.
         }
-        catch (IOException e)
+        catch (IOException)
         {
             // Do nothing.
         }

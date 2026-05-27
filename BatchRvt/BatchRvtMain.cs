@@ -59,11 +59,11 @@ public class BatchRvtMain
 
             Console.SetBufferSize(BufferWidth, BufferHeight);
         }
-        catch (ArgumentOutOfRangeException e)
+        catch (ArgumentOutOfRangeException)
         {
             // Can occur when output has been redirected via the command-line.
         }
-        catch (IOException e)
+        catch (IOException)
         {
             // Can occur when output has been redirected via the command-line.
         }
