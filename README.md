@@ -1,26 +1,44 @@
 # Revit Batch Processor (RBP)
 
-Fully automated batch processing of Revit files with your own Python or Dynamo task scripts!
+[![Build](https://img.shields.io/badge/build-manual-lightgrey)](#testing)
+[![Release](https://img.shields.io/github/v/release/Pascall-Watson/batch?include_prereleases&label=release)](https://github.com/Pascall-Watson/batch/releases)
+[![License: GPL v3](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE.txt)
+[![Language](https://img.shields.io/github/languages/top/Pascall-Watson/batch)](https://github.com/Pascall-Watson/batch/search?l=c%23)
+[![Downloads](https://img.shields.io/github/downloads/Pascall-Watson/batch/total)](https://github.com/Pascall-Watson/batch/releases)
+[![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)](#getting-started)
+[![Revit](https://img.shields.io/badge/Revit-2015--2027-0696D7)](#tech-stack)
 
-## Latest version (NEW)
+Pascall-Watson fork of Revit Batch Processor for large-scale Revit automation with custom Python or Dynamo task scripts.
 
-Version 1.13.0 beta release is available, which includes IronPython 3.4 support for Revit 2027 (.NET 10). [Installer is here](https://github.com/bvn-architecture/RevitBatchProcessor/releases/download/v1.13.0/RevitBatchProcessorSetup_v1.13.0.exe)
+This repository is the Pascall-Watson fork of [BVN Architecture's Revit Batch Processor](https://github.com/bvn-architecture/RevitBatchProcessor), originally authored by Daniel Rumery. Revit Batch Processor helps BIM, computational design, and Revit API teams run repeatable automation across many `.rvt` and `.rfa` files without manually opening each model. Use the Windows GUI for interactive setup, or run the command-line tool from scheduled jobs and build pipelines. This fork preserves RBP's practical batch orchestration model: version-aware Revit launching, central-file options, per-version add-ins, script templates, logging, and unattended processing.
 
-See the [Releases](https://github.com/bvn-architecture/RevitBatchProcessor/releases) page for [v1.13.0 release notes](https://github.com/bvn-architecture/RevitBatchProcessor/releases/tag/v1.13.0).
+> Fork repository: [Pascall-Watson/batch](https://github.com/Pascall-Watson/batch). Upstream repository: [bvn-architecture/RevitBatchProcessor](https://github.com/bvn-architecture/RevitBatchProcessor). The shared codebase currently reports `v1.12.1` beta, and source in this fork includes add-in projects for Revit 2015 through 2027.
 
-## RBP Sample Scripts
+<a id="table-of-contents"></a>
+## Table of Contents
 
-[Click here for some sample RBP python scripts maintained by Jan Christel (@jchristel)](https://github.com/jchristel/SampleCodeRevitBatchProcessor/)
+- [Features](#features)
+- [Demo](#demo)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Configuration](#configuration)
+  - [Running the Project](#running-the-project)
+- [Usage](#usage)
+- [API Reference](#api-reference)
+- [Project Structure](#project-structure)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [FAQ / Troubleshooting](#faq--troubleshooting)
+- [License](#license)
+- [Acknowledgements](#acknowledgements)
+- [Contact & Support](#contact--support)
 
-Many thanks to Jan for authoring and making these RBP sample scripts public!
-
-## FAQ
-
-See the [Revit Batch Processor FAQ](https://github.com/bvn-architecture/RevitBatchProcessor/wiki/Revit-Batch-Processor-FAQ).
-
-## Use cases
-
-This tool doesn't _do_ any of these things, but it _allows_ you to do them:
+<a id="features"></a>
+## Features
 
 - Batch Revit automation - process many project and family files with one repeatable workflow.
 - Python and Dynamo task scripts - run custom Revit API logic or Dynamo workspaces against each file.
@@ -93,15 +111,7 @@ The original BVN `v1.12.1` beta installer remains available from the upstream pr
 Start-Process "https://github.com/bvn-architecture/RevitBatchProcessor/releases/download/v1.12.1/RevitBatchProcessorSetup_v1.12.1.exe"
 ```
 
-- Batch processing of Revit files (.rvt and .rfa files) using either a specific version of Revit or a version that matches the version of Revit the file was saved in. Currently supports processing files in Revit versions 2015 through 2027. (Of course the required version of Revit must be installed!)
-- Custom task scripts written in Python or Dynamo! Python scripts have full access to the Revit API. Dynamo scripts can of course do whatever Dynamo can do :)
-- Option to create a new Python task script at the click of a button that contains the minimal amount of code required for the custom task script to operate on an opened Revit file. The new task script can then easily be extended to do some useful work. It can even load and execute your existing functions in a C# DLL (see [Executing functions in a C# DLL](#executing-functions-in-a-c-dll)).
-- Option for custom pre- and post-processing task scripts. Useful if the overall batch processing task requires some additional setup / tear down work to be done.
-- Central file processing options (Create a new local file, Detach from central).
-- Option to process files (of the same Revit version) in the same Revit session, or to process each file in its own Revit session. The latter is useful if Revit happens to crash during processing, since this won't block further processing.
-- Automatic Revit dialog / message box handling. These, in addition to Revit error messages are handled and logged to the GUI console. This makes the batch processor very likely to complete its tasks without any user intervention required!
-- Ability to import and export settings. This feature combined with the simple [command-line interface](#command-line-interface) allows for batch processing tasks to be setup to run automatically on a schedule (using the Windows Task Scheduler) without the GUI.
-- Generate a .txt-based list of Revit model file paths compatible with RBP. The *New List* button in the GUI will prompt for a folder path to scan for Revit files. Optionally you can specify the type of Revit files to scan for and also whether to include subfolders in the scan.
+Build from source when you want to develop, debug, or package the project yourself:
 
 ```powershell
 git clone https://github.com/Pascall-Watson/batch.git
@@ -121,7 +131,7 @@ During a successful build, per-version add-in projects deploy their add-in files
 <a id="configuration"></a>
 ### Configuration
 
-[Installer for Revit Batch Processor v1.13.0 beta](https://github.com/bvn-architecture/RevitBatchProcessor/releases/download/v1.13.0/RevitBatchProcessorSetup_v1.13.0.exe)
+RBP does not require a `.env` file. Most runtime configuration is created in the GUI and can be exported as a settings JSON file for later CLI runs.
 
 Use this optional PowerShell template to keep command-line paths readable while preparing a job:
 
@@ -150,10 +160,8 @@ For BIM 360 / cloud-hosted models, use the Revit version, project GUID, and mode
 
 <!-- TODO: Add a checked-in sample BatchRvt.Settings.json once the supported settings schema is documented. -->
 
-- At least one version of Revit installed. Currently supports Revit versions 2015 through 2027.
-- To build from source code, Visual Studio version 2017 or later.
-- If executing Dynamo scripts from the task script, Dynamo 1.3+ installed (currently supports Revit versions 2016 through 2027). NOTE: The Dynamo script MUST have been saved with the 'Automatic' Run mode. There **MUST BE EXACTLY ONE VERSION OF DYNAMO INSTALLED** for each version of Revit.
-- If using an Excel file for the Revit File List, Microsoft Office / Excel installed.
+<a id="running-the-project"></a>
+### Running the Project
 
 Start the debug GUI build:
 

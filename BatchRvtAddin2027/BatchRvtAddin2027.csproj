@@ -33,6 +33,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="6.8.0" />
+    <PackageReference Include="IronPython" Version="2.7.12" />
     <PackageReference Include="Moq" Version="4.18.3" />
     <PackageReference Include="Nice3point.Revit.Api.RevitAPI" Version="2027.0.10" />
     <PackageReference Include="Nice3point.Revit.Api.RevitAPIUI" Version="2027.0.10" />

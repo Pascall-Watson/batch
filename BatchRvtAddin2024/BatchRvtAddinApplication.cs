@@ -1,4 +1,4 @@
-//
+﻿//
 // Revit Batch Processor
 //
 // Copyright (c) 2020  Daniel Rumery, BVN
@@ -72,7 +72,7 @@ namespace BatchRvt.Addin.Revit2024
         {
             try
             {
-                ScriptHostUtil.ExecuteBatchScriptHost(pluginFolderPath_, uiApp, "Scripts27");
+                ScriptHostUtil.ExecuteBatchScriptHost(pluginFolderPath_, uiApp);
             }
             catch (Exception e)
             {

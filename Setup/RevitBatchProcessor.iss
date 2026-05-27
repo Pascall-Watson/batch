@@ -1,5 +1,5 @@
 #define AppName "Revit Batch Processor"
-#define AppVersion "1.13.0"
+#define AppVersion "1.12.1"
 
 [Setup]
 AppName={#AppName}

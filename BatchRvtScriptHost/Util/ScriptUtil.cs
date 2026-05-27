@@ -19,12 +19,9 @@
 //
 
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using BatchRvt.ScriptHost.Util;
-#if !NET10_0_OR_GREATER
 using IronPython.Modules;
-#endif
 using MSScripting = Microsoft.Scripting;
 using ScriptingHosting = Microsoft.Scripting.Hosting;
 using IronPythonHosting = IronPython.Hosting;
@@ -33,27 +30,16 @@ namespace BatchRvt.ScriptHost;
 
 public static class ScriptUtil
 {
-#if !NET10_0_OR_GREATER
     private const string PYTHON_LIB_ZIP_NAME = "python_27_lib.zip";
-#endif
 
     public static void AddPythonStandardLibrary(ScriptingHosting.ScriptScope scope)
     {
-#if NET10_0_OR_GREATER
-        // IronPython 3.4 stdlib ships as loose .py files via the IronPython.StdLib NuGet
-        // (ContentFiles → deployed to a `lib/` subdir next to this assembly). Add that
-        // directory to the engine's search paths.
-        var assemblyDir = Path.GetDirectoryName(typeof(ScriptUtil).Assembly.Location);
-        var libPath = Path.Combine(assemblyDir!, "lib");
-        AddSearchPaths(scope.Engine, new[] { libPath });
-#else
         var thisAssembly = typeof(ScriptUtil).Assembly;
         var pythonLibResourceName = thisAssembly.GetManifestResourceNames()
             .Single(name => name.ToLowerInvariant().EndsWith(PYTHON_LIB_ZIP_NAME.ToLowerInvariant()));
         var importer = new ResourceMetaPathImporter(thisAssembly, pythonLibResourceName);
         dynamic sysModule = IronPythonHosting.Python.GetSysModule(scope.Engine);
         sysModule.meta_path.append(importer);
-#endif
     }
 
     private static void AddVariables(ScriptingHosting.ScriptScope scope,
