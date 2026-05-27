@@ -42,18 +42,6 @@ public static class ScriptHostUtil
         string scriptsFolderName
     )
     {
-        // TEMP diagnostic: prove Execute fires + show env-var state. Remove once Phase 1 is green.
-        try
-        {
-            var diagPath = Path.Combine(Path.GetTempPath(), "batchrvt_csharp_diag.log");
-            var marker = Environment.GetEnvironmentVariable(ORCHESTRATION_MARKER_ENV_VAR);
-            File.AppendAllText(diagPath,
-                $"[{DateTime.Now:O}] ExecuteBatchScriptHost fired. " +
-                $"pluginFolderPath={pluginFolderPath}, scriptsFolderName={scriptsFolderName}, " +
-                $"{ORCHESTRATION_MARKER_ENV_VAR}={(marker ?? "<null>")}\n");
-        }
-        catch { /* diagnostic only */ }
-
         if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(ORCHESTRATION_MARKER_ENV_VAR)))
             return;
 

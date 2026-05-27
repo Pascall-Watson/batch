@@ -43,10 +43,7 @@ Three things discovered during this session that are not derivable from reading 
 
 Before squashing this work into a PR:
 
-1. **Strip diagnostic instrumentation.** Two temporary code blocks added during debugging:
-   - `BatchRvtAddin2027/BatchRvtAddinApplication.cs` — the `DiagLog` / `DiagLogPublic` methods and the multi-path file-write fan-out, plus the calls in `OnStartup` and `Execute`.
-   - `BatchRvtScriptHost/Util/ScriptHostUtil.cs` — the `// TEMP diagnostic:` block at the top of `ExecuteBatchScriptHost`.
-2. **Sweep scattered diag log files** from `%TEMP%\<GUID>\`, `C:\Users\Public\`, `~\`, and the deployed addin folder. Pattern: `batchrvt_*_diag.log`, `batchrvt_ipy34_hello.log`.
+1. **Sweep scattered diag log files** from `%TEMP%\<GUID>\`, `C:\Users\Public\`, `~\`, and the deployed addin folder. Pattern: `batchrvt_*_diag.log`, `batchrvt_ipy34_hello.log`.
 
 ### What's next (Phase 2)
 

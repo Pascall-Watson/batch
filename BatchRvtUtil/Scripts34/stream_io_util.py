@@ -102,7 +102,7 @@ def UsingStream(stream, action):
 
 def CreateFile(filePath, overwrite=False):
     fileMode = FileMode.Create if overwrite else FileMode.CreateNew
-    fileStream = FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite)
+    fileStream = FileStream(filePath, fileMode, FileAccess.Write, FileShare.ReadWrite)
     return fileStream
 
 
