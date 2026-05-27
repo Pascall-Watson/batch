@@ -35,10 +35,49 @@ namespace BatchRvt.Addin.Revit2027
     [Description("BatchRvtAddin")]
     public class BatchRvtAddinApplication : IExternalApplication
     {
+        // Static keeps the handler alive for the addin's lifetime — without this, .NET 10's GC
+        // can reclaim the local before Revit's UI thread pumps the queued ExternalEvent.
+        private static BatchRvtExternalEventHandler externalEventHandler_;
+
         public Result OnStartup(UIControlledApplication uiApplication)
         {
-            SetupBatchScriptHost(uiApplication.ControlledApplication);
+            DiagLog("OnStartup begin");
+            try
+            {
+                SetupBatchScriptHost(uiApplication.ControlledApplication);
+                DiagLog("OnStartup: SetupBatchScriptHost returned");
+            }
+            catch (Exception ex)
+            {
+                DiagLog($"OnStartup THREW: {ex}");
+                throw;
+            }
             return Result.Succeeded;
+        }
+
+        private static void DiagLog(string msg) => DiagLogPublic(msg);
+
+        internal static void DiagLogPublic(string msg)
+        {
+            // Try multiple paths — Path.GetTempPath() can return unexpected things in addin context.
+            var line = $"[{DateTime.Now:O}] {msg}\n";
+            string addinDir = null;
+            try { addinDir = Path.GetDirectoryName(typeof(BatchRvtAddinApplication).Assembly.Location); }
+            catch { /* */ }
+
+            var candidates = new[]
+            {
+                addinDir != null ? Path.Combine(addinDir, "batchrvt_addin_diag.log") : null,
+                Path.Combine(Path.GetTempPath(), "batchrvt_addin_diag.log"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "batchrvt_addin_diag.log"),
+                @"C:\Users\Public\batchrvt_addin_diag.log",
+            };
+            foreach (var path in candidates)
+            {
+                if (path == null) continue;
+                try { File.AppendAllText(path, line); }
+                catch { /* try next */ }
+            }
         }
 
         public Result OnShutdown(UIControlledApplication application)
@@ -49,8 +88,8 @@ namespace BatchRvt.Addin.Revit2027
         private static void SetupBatchScriptHost(ControlledApplication controlledApplication)
         {
             var pluginFolderPath = Path.GetDirectoryName(typeof(BatchRvtAddinApplication).Assembly.Location);
-            var batchRvtExternalEventHandler = new BatchRvtExternalEventHandler(pluginFolderPath);
-            batchRvtExternalEventHandler.Raise();
+            externalEventHandler_ = new BatchRvtExternalEventHandler(pluginFolderPath);
+            externalEventHandler_.Raise();
         }
     }
 
@@ -67,12 +106,14 @@ namespace BatchRvt.Addin.Revit2027
 
         public void Execute(UIApplication uiApp)
         {
+            BatchRvtAddinApplication.DiagLogPublic("ExternalEventHandler.Execute fired");
             try
             {
-                ScriptHostUtil.ExecuteBatchScriptHost(pluginFolderPath_, uiApp);
+                ScriptHostUtil.ExecuteBatchScriptHost(pluginFolderPath_, uiApp, "Scripts34");
             }
             catch (Exception e)
             {
+                BatchRvtAddinApplication.DiagLogPublic($"Execute THREW: {e}");
                 WinForms.MessageBox.Show(e.ToString(), ScriptHostUtil.BATCH_RVT_ERROR_WINDOW_TITLE);
             }
         }
