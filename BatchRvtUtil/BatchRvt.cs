@@ -83,7 +83,10 @@ public static class BatchRvt
         OpenLastViewed = 2
     }
 
-    private const string SCRIPTS_FOLDER_NAME = "Scripts";
+    // Renamed from "Scripts" → "Scripts27" when IPy 3.4 support for Revit 2027 was added.
+    // Revit 2015–2026 addins still read from this folder (IronPython 2.7); the 2027 addin
+    // reads from "Scripts34" (IronPython 3.4) via its own per-addin C# constant.
+    private const string SCRIPTS_FOLDER_NAME = "Scripts27";
 
     private const string SCRIPT_DATA_FOLDER_NAME = "BatchRvt";
 
