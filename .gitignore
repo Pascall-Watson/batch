@@ -250,3 +250,9 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
+
+# Python bytecode (CPython artifacts from local syntax-checking the IPy 3.4 scripts)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
