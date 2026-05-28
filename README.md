@@ -56,9 +56,9 @@ This repository is the Pascall-Watson fork of [BVN Architecture's Revit Batch Pr
 
 ![Revit Batch Processor GUI](BatchRvt_Screenshot.png)
 
-<!-- TODO: Add demo assets -->
+<!-- TODO: Add demo assets Use this section for a short GIF, terminal recording, or screenshots that show a complete batch run from setup through logs. RBP is a Windows desktop tool, so there is no hosted live demo for the application itself.
+-->
 
-Use this section for a short GIF, terminal recording, or screenshots that show a complete batch run from setup through logs. RBP is a Windows desktop tool, so there is no hosted live demo for the application itself.
 
 <a id="tech-stack"></a>
 ## Tech Stack
