@@ -1,291 +1,500 @@
-
-<span style="color:green; font-size:16px"> ATTENTION: Due to other commitments the original author of Revit Batch Processor (@DanRumery) is unable to support RBP for the future. For questions please seek help from the community such as the Dynamo and Revit API forums.
-
-</span>
-
 # Revit Batch Processor (RBP)
 
-Fully automated batch processing of Revit files with your own Python or Dynamo task scripts!
+[![Build](https://img.shields.io/badge/build-manual-lightgrey)](#testing)
+[![Release](https://img.shields.io/github/v/release/Pascall-Watson/batch?include_prereleases&label=release)](https://github.com/Pascall-Watson/batch/releases)
+[![License: GPL v3](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE.txt)
+[![Language](https://img.shields.io/github/languages/top/Pascall-Watson/batch)](https://github.com/Pascall-Watson/batch/search?l=c%23)
+[![Downloads](https://img.shields.io/github/downloads/Pascall-Watson/batch/total)](https://github.com/Pascall-Watson/batch/releases)
+[![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)](#getting-started)
+[![Revit](https://img.shields.io/badge/Revit-2015--2027-0696D7)](#tech-stack)
 
-## Latest version (NEW)
+Pascall-Watson fork of Revit Batch Processor for large-scale Revit automation with custom Python or Dynamo task scripts.
 
-Version 1.13.0 beta release is available, which includes IronPython 3.4 support for Revit 2027 (.NET 10). [Installer is here](https://github.com/bvn-architecture/RevitBatchProcessor/releases/download/v1.13.0/RevitBatchProcessorSetup_v1.13.0.exe)
+This repository is the Pascall-Watson fork of [BVN Architecture's Revit Batch Processor](https://github.com/bvn-architecture/RevitBatchProcessor), originally authored by Daniel Rumery. Revit Batch Processor helps BIM, computational design, and Revit API teams run repeatable automation across many `.rvt` and `.rfa` files without manually opening each model. Use the Windows GUI for interactive setup, or run the command-line tool from scheduled jobs and build pipelines. This fork preserves RBP's practical batch orchestration model: version-aware Revit launching, central-file options, per-version add-ins, script templates, logging, and unattended processing.
 
-See the [Releases](https://github.com/bvn-architecture/RevitBatchProcessor/releases) page for [v1.13.0 release notes](https://github.com/bvn-architecture/RevitBatchProcessor/releases/tag/v1.13.0).
+> Fork repository: [Pascall-Watson/batch](https://github.com/Pascall-Watson/batch). Upstream repository: [bvn-architecture/RevitBatchProcessor](https://github.com/bvn-architecture/RevitBatchProcessor). The shared codebase currently reports `v1.12.1` beta, and source in this fork includes add-in projects for Revit 2015 through 2027.
 
-## RBP Sample Scripts
+<a id="table-of-contents"></a>
+## Table of Contents
 
-[Click here for some sample RBP python scripts maintained by Jan Christel (@jchristel)](https://github.com/jchristel/SampleCodeRevitBatchProcessor/)
+- [Features](#features)
+- [Demo](#demo)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Configuration](#configuration)
+  - [Running the Project](#running-the-project)
+- [Usage](#usage)
+- [API Reference](#api-reference)
+- [Project Structure](#project-structure)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [FAQ / Troubleshooting](#faq--troubleshooting)
+- [License](#license)
+- [Acknowledgements](#acknowledgements)
+- [Contact & Support](#contact--support)
 
-Many thanks to Jan for authoring and making these RBP sample scripts public!
-
-## FAQ
-
-See the [Revit Batch Processor FAQ](https://github.com/bvn-architecture/RevitBatchProcessor/wiki/Revit-Batch-Processor-FAQ).
-
-## Use cases
-
-This tool doesn't _do_ any of these things, but it _allows_ you to do them:
-
-- Open all the Revit files across your Revit projects and run a health-check script against them. Keeping an eye on the health and performance of many Revit files is time-consuming. You could use this to check in on all your files daily and react to problems before they get too gnarly.
-- Perform project and family audits across your Revit projects.
-- Run large scale queries against many Revit files.
-- Mine data from your Revit projects for analytics or machine learning projects.
-- Automated milestoning of Revit projects.
-- Automated housekeeping tasks (e.g. place elements on appropriate worksets)
-- Batch upgrading of Revit projects and family files.
-- Testing your own Revit API scripts and Revit addins against a variety of Revit models and families in an automated manner.
-- Essentially anything you can do to one Revit file with the Revit API or a Dynamo script, you can now do to many!
-
-![Screenshot of the UI](BatchRvt_Screenshot.png)
-
+<a id="features"></a>
 ## Features
 
-- Batch processing of Revit files (.rvt and .rfa files) using either a specific version of Revit or a version that matches the version of Revit the file was saved in. Currently supports processing files in Revit versions 2015 through 2027. (Of course the required version of Revit must be installed!)
-- Custom task scripts written in Python or Dynamo! Python scripts have full access to the Revit API. Dynamo scripts can of course do whatever Dynamo can do :)
-- Option to create a new Python task script at the click of a button that contains the minimal amount of code required for the custom task script to operate on an opened Revit file. The new task script can then easily be extended to do some useful work. It can even load and execute your existing functions in a C# DLL (see [Executing functions in a C# DLL](#executing-functions-in-a-c-dll)).
-- Option for custom pre- and post-processing task scripts. Useful if the overall batch processing task requires some additional setup / tear down work to be done.
-- Central file processing options (Create a new local file, Detach from central).
-- Option to process files (of the same Revit version) in the same Revit session, or to process each file in its own Revit session. The latter is useful if Revit happens to crash during processing, since this won't block further processing.
-- Automatic Revit dialog / message box handling. These, in addition to Revit error messages are handled and logged to the GUI console. This makes the batch processor very likely to complete its tasks without any user intervention required!
-- Ability to import and export settings. This feature combined with the simple [command-line interface](#command-line-interface) allows for batch processing tasks to be setup to run automatically on a schedule (using the Windows Task Scheduler) without the GUI.
-- Generate a .txt-based list of Revit model file paths compatible with RBP. The *New List* button in the GUI will prompt for a folder path to scan for Revit files. Optionally you can specify the type of Revit files to scan for and also whether to include subfolders in the scan.
+- Batch Revit automation - process many project and family files with one repeatable workflow.
+- Python and Dynamo task scripts - run custom Revit API logic or Dynamo workspaces against each file.
+- Version-aware processing - select a fixed Revit version or let RBP match the version each file was saved in.
+- Central file workflows - detach from central, create new local files, audit files, and control workset opening behavior.
+- GUI and CLI entry points - configure jobs visually or run unattended from scripts and Windows Task Scheduler.
+- Automatic dialog handling - capture and respond to common English-language Revit dialogs during processing.
+- Pre- and post-processing hooks - prepare inputs and clean up outputs around the main task script.
+- File-list generation - scan folders for `.rvt` and `.rfa` files and produce a text list compatible with RBP.
+- BIM 360 / cloud model list support - process cloud models using Revit version, project GUID, and model GUID entries.
+- Installer and add-in deployment scripts - build and deploy the per-version Revit add-ins from source.
 
-## Unlimited Power
+<a id="demo"></a>
+## Demo
 
-> "With great power come great responsibility"
-[-- Spiderman](https://quoteinvestigator.com/2015/07/23/great-power/)
+![Revit Batch Processor GUI](BatchRvt_Screenshot.png)
 
-This tool enables you to do things with Revit files on a very large scale. Because of this ability, Python or Dynamo scripts that make modifications to Revit files (esp. workshared files) should be developed with the utmost care! You will need to be confident in your ability to write Python or Dynamo scripts that won't ruin your files en-masse. The Revit Batch Processor's 'Detach from Central' option should be used both while testing and for scripts that do not explicitly depend on working with a live workshared Central file.
+<!-- TODO: Add demo assets Use this section for a short GIF, terminal recording, or screenshots that show a complete batch run from setup through logs. RBP is a Windows desktop tool, so there is no hosted live demo for the application itself.
+-->
 
-# Build & Installation Instructions
 
-## Installer
+<a id="tech-stack"></a>
+## Tech Stack
 
-[Installer for Revit Batch Processor v1.13.0 beta](https://github.com/bvn-architecture/RevitBatchProcessor/releases/download/v1.13.0/RevitBatchProcessorSetup_v1.13.0.exe)
+| Area | Technology | Notes |
+| --- | --- | --- |
+| Primary language | C# | Legacy project files plus newer SDK-style project support for the Revit 2027 add-in. |
+| Desktop framework | Windows Forms | Used by the BatchRvtGUI application. |
+| Runtime target | .NET Framework 4.8 | Main GUI, CLI, utility, script host, and Revit 2015-2026 add-in projects. |
+| Revit 2027 add-in | `net10.0-windows` | Uses `Nice3point.Revit.Api.RevitAPI` and `Nice3point.Revit.Api.RevitAPIUI` packages. |
+| Revit integration | Autodesk Revit API / RevitAPIUI | Per-version add-in projects for Revit 2015-2027. |
+| Script execution | IronPython 2.7.x | Runs Python task scripts with access to Revit API objects. |
+| Visual scripting | Dynamo 1.3+ | Runs Dynamo `.dyn` workspaces when Dynamo is installed for the target Revit version. |
+| Data input | `.txt`, `.xlsx` | Text files contain one model path per line; Excel files use the first column. |
+| Serialization | Newtonsoft.Json | Used for settings and data exchange. |
+| Testing | xUnit 2.x | `BatchRvtUtil.Tests` contains unit tests for utility behavior. |
+| Test helpers | FluentAssertions, Moq, Castle.Core | Used across test and project references. |
+| Installer | Inno Setup 5 or 6 | Setup scripts live in `Setup/`. |
 
-The Revit Batch Processor (GUI) application will appear in the Start menu after the installation.
+<a id="getting-started"></a>
+## Getting Started
 
-## Build from Source code
+<a id="prerequisites"></a>
+### Prerequisites
 
-Open the solution file RevitBatchProcessor.sln in Visual Studio 2017 or later and run Build Solution (F6).
+- Windows with access to a supported Autodesk Revit installation.
+- Visual Studio 2017 or later with the .NET desktop development workload.
+- .NET Framework 4.8 Developer Pack for the main solution projects.
+- MSBuild available from a Visual Studio Developer PowerShell or Developer Command Prompt.
+- NuGet CLI or Visual Studio package restore.
+- Revit API references for the Revit versions you build locally. Legacy add-in projects reference assemblies under `References/Revit/<year>/`.
+- Dynamo 1.3 or later if you want to run Dynamo task scripts.
+- Microsoft Office / Excel if you want to use `.xlsx` model lists.
+- Inno Setup 5 or 6 if you want to build the Windows installer.
 
-Revit addins will be automatically deployed to the Addins folder for each available Revit version [2015-2026]. e.g. %APPDATA%\Autodesk\Revit\Addins\2019
+For Dynamo workflows, install exactly one Dynamo version per Revit version. Multiple Dynamo installs for the same Revit version can prevent Dynamo Revit modules from loading correctly.
 
-The BatchRvtGUI project is the GUI that drives the underlying engine (the BatchRvt project). Once built, run BatchRvtGUI.exe to start the Revit Batch Processor GUI.
+<a id="installation"></a>
+### Installation
 
-When rebuilding, please make sure all Revit applications are closed before attempting the rebuild.
+Install from this fork's packaged releases when an installer is available:
 
-# Requirements
+```powershell
+Start-Process "https://github.com/Pascall-Watson/batch/releases"
+```
 
-- At least one version of Revit installed. Currently supports Revit versions 2015 through 2027.
-- To build from source code, Visual Studio version 2017 or later.
-- If executing Dynamo scripts from the task script, Dynamo 1.3+ installed (currently supports Revit versions 2016 through 2027). NOTE: The Dynamo script MUST have been saved with the 'Automatic' Run mode. There **MUST BE EXACTLY ONE VERSION OF DYNAMO INSTALLED** for each version of Revit.
-- If using an Excel file for the Revit File List, Microsoft Office / Excel installed.
+The original BVN `v1.12.1` beta installer remains available from the upstream project for comparison or legacy installation testing:
 
-# License
+```powershell
+Start-Process "https://github.com/bvn-architecture/RevitBatchProcessor/releases/download/v1.12.1/RevitBatchProcessorSetup_v1.12.1.exe"
+```
 
-This project is licensed under the terms of [The GNU General Public License v3.0](https://www.gnu.org/licenses/gpl.html)
+Build from source when you want to develop, debug, or package the project yourself:
 
-Copyright (c) 2021  Daniel Rumery, BVN
+```powershell
+git clone https://github.com/Pascall-Watson/batch.git
+cd batch
+nuget restore .\RevitBatchProcessor.sln
+msbuild .\RevitBatchProcessor.sln /p:Configuration=Debug /p:Platform=x64
+```
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+You can also use the repository build script from the `scripts/` folder:
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+```powershell
+.\scripts\build_BatchRvtGUI.Debug.bat
+```
 
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+During a successful build, per-version add-in projects deploy their add-in files to the matching Revit add-ins folder, for example `%APPDATA%\Autodesk\Revit\Addins\2025\BatchRvt\`.
 
-# Credits
+<a id="configuration"></a>
+### Configuration
 
-Daniel Rumery [@DanRumery](https://github.com/DanRumery) (Original / Primary Author)
-## Other Contributors (code)
+RBP does not require a `.env` file. Most runtime configuration is created in the GUI and can be exported as a settings JSON file for later CLI runs.
 
-- Vincent Cadoret [@vinnividivicci](https://github.com/vinnividivicci)
-- Ryan Schwartz [@RyanSchw](https://github.com/RyanSchw)
-- Dimitar Venkov [@dimven](https://github.com/dimven) (Upgraded support for Revit 2025) 
-- Nicklas Ostergaard [@NicklasOestergaard](https://github.com/NicklasOestergaard) (Upgraded support for Revit 2022)
-- Peter Smith [@punderscoresmithuk](https://github.com/punderscoresmithuk) (Upgraded support for Revit 2023)
-- Maciej Wypych [@maciejwypych](https://github.com/maciejwypych) (Upgraded support for Revit 2024 and more)
+Use this optional PowerShell template to keep command-line paths readable while preparing a job:
 
-# Usage
+```powershell
+$TaskScript = "C:\BatchTasks\HealthCheck.py"
+$FileList = "C:\BatchTasks\RevitFileList.txt"
+$LogFolder = "C:\BatchTasks\Logs"
+$RevitVersion = "2025"
+```
 
-The ***two ingredients*** you will need in order to use the Revit Batch Processor ("RBP") are:
-- An **Excel (.xlsx) file** or **Text (.txt) file** that contains a list of Revit file paths. Each file path must be fully qualified (no partial paths).
-  
-  For an Excel file this means the first column of each row contains a file path.
+For a text file list, place one fully qualified Revit file path on each line:
 
-  For a Text file this means each line contains a file path.
-  
-  For example:
-  ```
-  P:\15\ProjectABC\MainModel.rvt
-  P:\16\ProjectXYZ\ModelA.rvt
-  P:\16\ProjectXYZ\ModelB.rvt
-  P:\16\ProjectXYZ\ConsultantModel.rvt
-  ```
+```text
+P:\15\ProjectABC\MainModel.rvt
+P:\16\ProjectXYZ\ModelA.rvt
+P:\16\ProjectXYZ\ModelB.rvt
+P:\16\ProjectXYZ\ConsultantModel.rvt
+```
 
-  NOTE: you can generate this list in .txt format using the *New List* button in the GUI. It will prompt you for a folder to scan for Revit files. Optionally you can specify the type of Revit files to scan for and also whether to include subfolders in the scan.
+For BIM 360 / cloud-hosted models, use the Revit version, project GUID, and model GUID separated by spaces:
 
-  *New in version 1.6+*
+```text
+2020 75b6464c-ba0f-4529-b049-0de9e473c2d6 0d54b8cc-3837-4df2-8c8e-0a94f4828868
+2020 c0dc2fda-fd34-42fe-8bb7-bd9f43841dbf d9f011d6-d52c-4c9f-9d7b-eb8388bd3ed0
+```
 
-  There is limited support for processing files in BIM360. For BIM360-hosted files, use the following format instead:
+<!-- TODO: Add a checked-in sample BatchRvt.Settings.json once the supported settings schema is documented. -->
 
-  `<Revit version> <Project Guid> <Model Guid>`
-  
-  *Note: these three components must be separated by space(s) (not tabs!).*
+<a id="running-the-project"></a>
+### Running the Project
 
-  For example:
-  ```
-  2020 75b6464c-ba0f-4529-b049-0de9e473c2d6 0d54b8cc-3837-4df2-8c8e-0a94f4828868
-  2020 c0dc2fda-fd34-42fe-8bb7-bd9f43841dbf d9f011d6-d52c-4c9f-9d7b-eb8388bd3ed0
-  ```
+Start the debug GUI build:
 
-  RBP is not able to detect the Revit version of cloud models hence why the Revit version is specified explicitly.
+```powershell
+.\scripts\start_BatchRvtGUI.Debug.bat
+```
 
-- A **Dynamo (.dyn)** or **Python (.py)** task script. This script will be executed once for each file in the list.
+Show CLI help after building:
 
-  For Dynamo scripts, **any workspace (.dyn) file should work** as a task script without modification. *(Indeed, if you find a script that works in Dynamo but not in RBP, [submit an Issue](https://github.com/bvn-architecture/RevitBatchProcessor/issues/new) to the RBP github page!)*
+```powershell
+.\BatchRvt\bin\x64\Debug\BatchRvt.exe --help
+```
 
-  For Python scripts (\*.py) they should contain at minimum the following code:
-  ```python
-  '''Output "Hello Revit world!" to the console / log.'''
+Build a release configuration:
 
-  # This section is common to all Python task scripts. 
-  import clr
-  import System
+```powershell
+msbuild .\RevitBatchProcessor.sln /p:Configuration=Release /p:Platform=x64
+```
 
-  clr.AddReference("RevitAPI")
-  clr.AddReference("RevitAPIUI")
-  from Autodesk.Revit.DB import *
+Run the command-line processor with an exported settings file:
 
-  import revit_script_util
-  from revit_script_util import Output
+```powershell
+.\BatchRvt\bin\x64\Release\BatchRvt.exe --settings_file "C:\BatchTasks\BatchRvt.Settings.json" --log_folder "C:\BatchTasks\Logs"
+```
 
-  sessionId = revit_script_util.GetSessionId()
-  uiapp = revit_script_util.GetUIApplication()
+<a id="usage"></a>
+## Usage
 
-  doc = revit_script_util.GetScriptDocument()
-  revitFilePath = revit_script_util.GetRevitFilePath()
+### Use case 1: Run a basic Python task script
 
-  # The code above is boilerplate, everything below is all yours.
-  # You can use almost any part of the Revit API here!
-
-  Output()
-  Output("Hello Revit world!")
-  ```
-
-# Executing functions in a C# DLL
-
-Using a python task script it's quite easy to load and execute code in a C# DLL. When RBP runs the python task script, it adds the task script's folder path to the search paths so that if your DLL is in the same folder as your python task script you should be able to execute your functions as follows:
+Create a Python script that receives the active Revit document from `revit_script_util` and writes output to the RBP log:
 
 ```python
-# For example assume your DLL is called MyUtilities.dll and you have a static function called SomeClass.DoSomeWork() in namespace MyNameSpace:
-# Assume this python script exists in the same folder as MyUtilities.dll.
+"""Write basic model information to the RBP log."""
+
+import clr
+import System
+
+clr.AddReference("RevitAPI")
+clr.AddReference("RevitAPIUI")
+from Autodesk.Revit.DB import *
+
+import revit_script_util
+from revit_script_util import Output
+
+doc = revit_script_util.GetScriptDocument()
+revitFilePath = revit_script_util.GetRevitFilePath()
+
+Output("Processing: " + revitFilePath)
+Output("Model title: " + doc.Title)
+```
+
+Run it against a text file list in detach mode:
+
+```powershell
+.\BatchRvt\bin\x64\Release\BatchRvt.exe `
+  --task_script "C:\BatchTasks\ReportModelInfo.py" `
+  --file_list "C:\BatchTasks\RevitFileList.txt" `
+  --revit_version 2025 `
+  --detach `
+  --log_folder "C:\BatchTasks\Logs"
+```
+
+### Use case 2: Run a Dynamo workspace for each model
+
+Save the Dynamo workspace with Run mode set to `Automatic`, then pass the `.dyn` file as the task script:
+
+```powershell
+.\BatchRvt\bin\x64\Release\BatchRvt.exe `
+  --task_script "C:\BatchTasks\AuditViews.dyn" `
+  --file_list "C:\BatchTasks\RevitFileList.xlsx" `
+  --revit_version 2024 `
+  --detach
+```
+
+Dynamo tasks always use a separate Revit session for each Revit file because Dynamo opens documents in the Revit UI context.
+
+### Use case 3: Schedule unattended processing
+
+Export settings from the GUI, then call the CLI from Windows Task Scheduler or another automation tool:
+
+```powershell
+$BatchRvt = "$env:LOCALAPPDATA\RevitBatchProcessor\BatchRvt.exe"
+$Settings = "C:\BatchTasks\NightlyAudit\BatchRvt.Settings.json"
+$Logs = "C:\BatchTasks\NightlyAudit\Logs"
+
+& $BatchRvt --settings_file $Settings --log_folder $Logs
+```
+
+This pattern is useful for nightly health checks, batch upgrades, data extraction, or regression testing your own Revit API add-ins against a model library.
+
+### Advanced: Execute code from a C# DLL in a Python task
+
+Place your DLL beside the Python task script. RBP adds the task script folder to the script search path, so the DLL can be loaded directly:
+
+```python
+import clr
+
 clr.AddReference("MyUtilities")
 from MyNameSpace import SomeClass
 
-# Invoke your static function, passing in any parameters you need.
 SomeClass.DoSomeWork(doc)
 ```
 
-# Command-line Interface
+<a id="api-reference"></a>
+## API Reference
 
-Revit Batch Processor can be run from the command-line (bypassing the GUI). First configure and export the required processing settings from the GUI application. Once this is done you can simply run the command line utility **BatchRvt.exe** passing the exported settings file path as an argument:
+RBP exposes a command-line interface rather than an HTTP API.
 
-```
-%LOCALAPPDATA%\RevitBatchProcessor\BatchRvt.exe --settings_file "BatchRvt.Settings.json"
-```
+### Command-line syntax
 
-Optionally you can also specify the location for the log file:
-
-```
-%LOCALAPPDATA%\RevitBatchProcessor\BatchRvt.exe --log_folder "C:\MyBatchTasks\Logs" --settings_file "C:\MyBatchTasks\BatchRvt.Settings.json"
+```powershell
+BatchRvt.exe --settings_file <SETTINGS_FILE_PATH> [--log_folder <LOG_FOLDER_PATH>]
+BatchRvt.exe --file_list <REVIT_FILE_LIST_PATH> --task_script <TASK_SCRIPT_FILE_PATH> [options]
 ```
 
-Alternatively, RBP can be run in batch processing mode without a settings file, using some basic arguments:
+### CLI options
 
-```
-%LOCALAPPDATA%\RevitBatchProcessor\BatchRvt.exe --task_script MyDynamoWorkspace.dyn --file_list RevitFileList.xlsx --revit_version 2018
-```
+| Option | Value | Description |
+| --- | --- | --- |
+| `--settings_file` | Path to JSON settings file | Loads a processing configuration exported from the GUI. |
+| `--file_list` | Path to `.txt` or `.xlsx` file | Supplies the Revit model list when not using a settings file. |
+| `--task_script` | Path to `.py` or `.dyn` file | Script or Dynamo workspace to run once per model. |
+| `--revit_version` | Revit year, for example `2025` | Forces all files through a specific Revit version. If omitted, RBP attempts to use the version each file was saved in. |
+| `--log_folder` | Folder path | Writes logs to the specified folder. |
+| `--detach` | Flag | Opens central files detached from central. |
+| `--create_new_local` | Flag | Creates a new local file for workshared central models. |
+| `--worksets` | `open_all` or `close_all` | Controls initial workset opening behavior. |
+| `--audit` | Flag | Opens models with Revit audit enabled. |
+| `--help` | Flag | Prints command-line help. |
 
-NOTE: this mode will operate in Detach mode when processing Central files. The **--revit_version** argument is optional here---if it is omitted then RBP will use the version of Revit that each Revit file was saved in.
+### Python task script helpers
 
-To see help on all available command-line options use `--help`:
+| Helper | Return type | Description |
+| --- | --- | --- |
+| `revit_script_util.GetSessionId()` | `str` | Returns the current RBP session identifier. |
+| `revit_script_util.GetUIApplication()` | `Autodesk.Revit.UI.UIApplication` | Returns the active Revit UI application object. |
+| `revit_script_util.GetScriptDocument()` | `Autodesk.Revit.DB.Document` | Returns the Revit document being processed. |
+| `revit_script_util.GetRevitFilePath()` | `str` | Returns the full path of the current Revit file. |
+| `revit_script_util.Output(message)` | `None` | Writes a message to the RBP console and log. |
 
-```
-%LOCALAPPDATA%\RevitBatchProcessor\BatchRvt.exe --help
-```
+See this fork's [docs](docs/) and the upstream [Revit Batch Processor FAQ](https://github.com/bvn-architecture/RevitBatchProcessor/wiki/Revit-Batch-Processor-FAQ) for additional guidance.
 
-```
-Help:
+<a id="project-structure"></a>
+## Project Structure
 
-	Usage (using a settings file):
-
-		BatchRvt.exe --settings_file <SETTINGS FILE PATH> [--log_folder <LOG FOLDER PATH>]
-
-	Example:
-
-		BatchRvt.exe --settings_file BatchRvt.Settings.json --log_folder .
-
-
-	Usage (without a settings file):
-
-		BatchRvt.exe --file_list <REVIT FILE LIST PATH> --task_script <TASK SCRIPT FILE PATH>
-
-	(NOTE: this mode operates in batch mode only; by default operates in detach mode for central files.)
-
-
-	Additional command-line options:
-
-		--revit_version <REVIT VERSION>
-
-		--log_folder <LOG FOLDER PATH>
-
-		--detach | --create_new_local
-
-		--worksets <open_all | close_all>
-
-		--audit
-
-		--help
-
-
-	Examples:
-
-		BatchRvt.exe --task_script MyDynamoWorkspace.dyn --file_list RevitFileList.xlsx
-
-		BatchRvt.exe --task_script MyDynamoWorkspace.dyn --file_list RevitFileList.xlsx --detach --audit
-
-		BatchRvt.exe --task_script MyTask.py --file_list RevitFileList.txt --create_new_local --worksets open_all
-
-		BatchRvt.exe --task_script MyTask.py --file_list RevitFileList.xlsx --revit_version 2019 --detach --worksets close_all
-
+```text
+.
+|-- AddinDeployment/          # Batch files that copy/remove Revit add-in files.
+|-- BatchRevitDynamo/         # Dynamo execution integration.
+|-- BatchRvt/                 # Command-line batch processor executable.
+|-- BatchRvtAddin2015/        # Revit 2015 add-in project.
+|-- BatchRvtAddin20xx/        # Additional per-version Revit add-in projects through 2027.
+|-- BatchRvtGUI/              # Windows Forms GUI application.
+|-- BatchRvtScriptHost/       # Script host invoked by Revit add-ins.
+|-- BatchRvtUtil/             # Shared utilities, script templates, and Revit orchestration code.
+|-- BatchRvtUtil.Tests/       # xUnit tests for utility code.
+|-- Common/                   # Shared assembly metadata.
+|-- References/               # Local third-party and Revit API reference assemblies.
+|-- Setup/                    # Inno Setup installer scripts.
+|-- docs/                     # Additional project documentation.
+|-- packages/                 # NuGet package restore output for legacy projects.
+|-- scripts/                  # Build, clean, start, and MSBuild helper scripts.
+|-- Directory.Build.targets   # Shared MSBuild settings.
+|-- RevitBatchProcessor.sln   # Main Visual Studio solution.
+|-- LICENSE.txt               # GNU GPL v3 license text.
+`-- README.md                 # Project overview and contributor guide.
 ```
 
-# Contribute
+<a id="roadmap"></a>
+## Roadmap
 
-Feedback and suggestions for improvement are more than welcome! Please track and submit bugs via the Github Issues page. If you're feeling particularly adventurous you may even submit your own code via a Github pull request.
+- [x] Revit 2015-2026 add-in support.
+- [x] GUI-driven batch setup and settings export.
+- [x] Command-line processing for scheduled and unattended runs.
+- [x] Python and Dynamo task script execution.
+- [x] Central file options for detach, new local, audit, and worksets.
+- [x] Source-level Revit 2027 add-in project.
+- [ ] Validate and publish the next packaged installer release.
+- [ ] Expand automated test coverage around settings, file-list parsing, and CLI behavior.
+- [ ] Document a stable sample `BatchRvt.Settings.json` schema.
+- [ ] Improve localized dialog handling beyond English-language Revit dialogs.
+- [ ] Add contributor onboarding files such as `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md`.
 
-<https://github.com/bvn-architecture/RevitBatchProcessor>
+Track proposed work and bugs for this fork in [GitHub Issues](https://github.com/Pascall-Watson/batch/issues).
 
-# Known Limitations / Issues
+<a id="contributing"></a>
+## Contributing
 
-- There **MUST BE EXACTLY ONE VERSION OF DYNAMO INSTALLED** for each version of Revit. If two or more versions of Dynamo are installed for the same Revit version then the Revit Batch Processor fails to run the Dynamo task script because the required Dynamo Revit module is not loaded. This may be fixed in a future version.
-- Dynamo scripts will always be executed using the 'Use separate Revit session for each Revit file' option. This restriction is due to the context in which Revit Batch Processor operates with the Revit API, which prevents the active UI document from being closed or switched during the Revit session. (NOTE: When executing a Dynamo task script, the Revit Batch Processor opens the document in the UI and is therefore subject to this Revit API limitation. For Python task scripts, the Revit Batch Processor only opens the document in memory, so Python scripts do not suffer this restriction!)
-- Revit Batch Processor currently only recognizes and automatically handles Revit dialog boxes presented in English (dialog title, text and button text). If you're using a non-English version of Windows or Revit then it's very likely RBP will fail to handle any dialog boxes that appear during processing.
-- Revit Batch Processor requires write access to the folder containing the Dynamo script. This because it makes a temporary copy of the Dynamo script in the same folder as the original. The temporary copy is made so that the script's Run mode can be temporarily set to 'Automatic' (if it isn't already). It is created in the same folder as the original so that any relative paths in the script will remain valid.
+Contributions to this fork are welcome. The original primary author of the upstream BVN project is no longer able to provide ongoing support, so community-maintained fixes, documentation improvements, and Revit-version updates are especially valuable.
 
-<!---
+Recommended workflow:
 
-# Release Notes
+1. Fork the repository.
+2. Create a focused branch from the default branch.
+3. Restore packages and build the solution locally.
+4. Make a small, reviewable change.
+5. Add or update tests where the change can be tested outside Revit.
+6. Run the relevant build and test commands from [Testing](#testing).
+7. Open a pull request against [Pascall-Watson/batch](https://github.com/Pascall-Watson/batch) with the problem, solution, and validation steps clearly described.
 
-[ TO DO ]
+```powershell
+git checkout -b fix/describe-the-problem
+nuget restore .\RevitBatchProcessor.sln
+msbuild .\RevitBatchProcessor.sln /p:Configuration=Debug /p:Platform=x64
+```
 
---->
+Coding and review expectations:
+
+- Keep changes scoped to one behavior or Revit-version update at a time.
+- Preserve existing project structure and per-version add-in patterns.
+- Update `BatchRvtUtil/RevitVersion.cs`, add-in projects, installer scripts, and documentation together when adding a new Revit year.
+- Prefer clear, imperative commit messages such as `Fix cloud model file-list parsing`.
+- Include manual Revit validation notes when the behavior cannot be covered by unit tests.
+- Look for issues labeled `good first issue`, `help wanted`, or similar newcomer-friendly labels.
+
+<!-- TODO: Add CONTRIBUTING.md and CODE_OF_CONDUCT.md if the project wants dedicated contributor governance documents. -->
+
+<a id="testing"></a>
+## Testing
+
+Restore dependencies and build the test project:
+
+```powershell
+nuget restore .\RevitBatchProcessor.sln
+msbuild .\BatchRvtUtil.Tests\BatchRvtUtil.Tests.csproj /p:Configuration=Debug /p:Platform=AnyCPU
+```
+
+Run unit tests with Visual Studio Test Explorer, or from a Developer PowerShell with `vstest.console.exe` available:
+
+```powershell
+vstest.console.exe .\BatchRvtUtil.Tests\bin\Debug\BatchRvtUtil.Tests.dll
+```
+
+Run a solution build as the main regression check:
+
+```powershell
+msbuild .\RevitBatchProcessor.sln /p:Configuration=Debug /p:Platform=x64
+```
+
+Run code analysis with the repository ruleset when available in your Visual Studio installation:
+
+```powershell
+msbuild .\RevitBatchProcessor.sln /p:Configuration=Debug /p:Platform=x64 /p:RunCodeAnalysis=true
+```
+
+Most Revit integration behavior requires manual validation because it depends on installed Revit versions, Revit API assemblies, add-in deployment, and real model files. For pull requests that touch Revit orchestration, include the Revit version tested, the model type, the task script type, and whether the run used detach or new-local processing.
+
+<a id="deployment"></a>
+## Deployment
+
+RBP deploys as a Windows desktop application plus per-version Revit add-ins.
+
+Builds deploy add-ins automatically through post-build scripts into the matching Revit add-ins folder:
+
+```text
+%APPDATA%\Autodesk\Revit\Addins\<year>\BatchRvt\
+```
+
+Build the installer with Inno Setup 5 or 6 installed:
+
+```powershell
+.\Setup\compile_rbp_setup.bat
+```
+
+Installer definitions live in `Setup/RevitBatchProcessor.iss` and `Setup/RevitBatchProcessor_BVN.iss`. RBP is not a web service and does not target Docker, Vercel, Heroku, or cloud deployment platforms.
+
+<a id="faq--troubleshooting"></a>
+## FAQ / Troubleshooting
+
+<details>
+<summary>Build fails because NuGet packages or xUnit props are missing.</summary>
+
+Run package restore before building:
+
+```powershell
+nuget restore .\RevitBatchProcessor.sln
+```
+
+If Visual Studio still reports missing package imports, delete stale `bin/` and `obj/` folders for the affected project and restore again.
+</details>
+
+<details>
+<summary>Build fails because Revit API references are missing.</summary>
+
+Legacy add-in projects reference local assemblies under `References/Revit/<year>/`. Install the matching Revit version or provide the required `RevitAPI.dll` and `RevitAPIUI.dll` reference assemblies for the years you want to build.
+</details>
+
+<details>
+<summary>Dynamo scripts fail even though they run in Dynamo.</summary>
+
+Make sure the `.dyn` file is saved with Run mode set to `Automatic`. Also confirm there is exactly one Dynamo installation for the target Revit version; multiple Dynamo installs for the same Revit version can prevent Dynamo Revit modules from loading.
+</details>
+
+<details>
+<summary>RBP does not dismiss a Revit dialog automatically.</summary>
+
+Automatic dialog handling currently recognizes English-language Revit dialog titles, text, and buttons. Non-English Windows or Revit installations may require manual intervention or additional dialog-handling logic.
+</details>
+
+<details>
+<summary>Processing stops after a Revit crash.</summary>
+
+Use the option to process each Revit file in a separate Revit session. That mode isolates failures so one crashed session is less likely to block the rest of the batch.
+</details>
+
+<a id="license"></a>
+## License
+
+This project is licensed under the [GNU General Public License v3.0](LICENSE.txt). You may use, study, modify, and redistribute the software under the GPL terms, provided derivative distributions preserve the same license obligations. The software is provided without warranty; see the full license text for details.
+
+<a id="acknowledgements"></a>
+## Acknowledgements
+
+- Daniel Rumery ([@DanRumery](https://github.com/DanRumery)), original and primary author.
+- BVN Architecture, original project sponsor and upstream repository owner.
+- Pascall-Watson, maintainers of this fork.
+- Vincent Cadoret ([@vinnividivicci](https://github.com/vinnividivicci)), Ryan Schwartz ([@RyanSchw](https://github.com/RyanSchw)), Dimitar Venkov ([@dimven](https://github.com/dimven)), Nicklas Ostergaard ([@NicklasOestergaard](https://github.com/NicklasOestergaard)), Peter Smith ([@punderscoresmithuk](https://github.com/punderscoresmithuk)), and Maciej Wypych ([@maciejwypych](https://github.com/maciejwypych)) for code contributions and Revit-version upgrades.
+- Jan Christel ([@jchristel](https://github.com/jchristel)) for maintaining public [sample RBP Python scripts](https://github.com/jchristel/SampleCodeRevitBatchProcessor/).
+- Autodesk Revit API, Dynamo, IronPython, xUnit, FluentAssertions, Moq, Newtonsoft.Json, and Inno Setup communities.
+- The Dynamo and Revit API forums for ongoing community support and troubleshooting knowledge.
+
+<a id="contact--support"></a>
+## Contact & Support
+
+<!-- TODO: Confirm current maintainers and preferred support channels. -->
+
+The original author is unable to provide ongoing support for RBP. For fork-specific issues, use the Pascall-Watson repository; for historical context, compare against the upstream BVN project and community resources.
+
+- Repository: [Pascall-Watson/batch](https://github.com/Pascall-Watson/batch)
+- Bug reports and feature requests: [GitHub Issues](https://github.com/Pascall-Watson/batch/issues)
+- Upstream project: [bvn-architecture/RevitBatchProcessor](https://github.com/bvn-architecture/RevitBatchProcessor)
+- Upstream FAQ: [Revit Batch Processor FAQ](https://github.com/bvn-architecture/RevitBatchProcessor/wiki/Revit-Batch-Processor-FAQ)
+- Community help: Dynamo forums and Revit API forums
+
+When opening an issue, include the RBP version, Revit version, Windows version, task script type, file-list type, relevant log output, and a minimal reproduction when possible.
