@@ -1,4 +1,4 @@
-﻿//
+//
 // Revit Batch Processor
 //
 // Copyright (c) 2020  Daniel Rumery, BVN
@@ -20,7 +20,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
 
 namespace BatchRvt.ScriptHost;
@@ -31,19 +30,25 @@ public static class ScriptHostUtil
     public const string BATCH_RVT_ERROR_WINDOW_TITLE = "BatchRvt Script Error";
 
     private const string BatchScriptHostFilename = "revit_script_host.py";
-    private const string BATCHRVT_SCRIPTS_FOLDER_PATH__ENVIRONMENT_VARIABLE_NAME = "BATCHRVT__SCRIPTS_FOLDER_PATH";
+
+    // Presence of this env var (set by the outer BatchRvt orchestrator) indicates that
+    // this addin load is part of a batch session. Without it, we early-exit so a plain
+    // Revit startup doesn't spin up the IronPython engine for nothing.
+    private const string ORCHESTRATION_MARKER_ENV_VAR = "BATCHRVT__SCRIPT_FILE_PATH";
 
     public static void ExecuteBatchScriptHost(
         string pluginFolderPath,
-        object uiApplicationObject
+        object uiApplicationObject,
+        string scriptsFolderName
     )
     {
-        var environmentVariables = GetEnvironmentVariables();
+        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(ORCHESTRATION_MARKER_ENV_VAR)))
+            return;
 
-        if (environmentVariables == null) return;
-        var batchRvtScriptsFolderPath = GetBatchRvtScriptsFolderPath(environmentVariables);
+        var pluginFullFolderPath = Path.GetFullPath(pluginFolderPath);
+        var batchRvtScriptsFolderPath = Path.Combine(pluginFullFolderPath, scriptsFolderName);
+        var scriptHostFilePath = Path.Combine(batchRvtScriptsFolderPath, BatchScriptHostFilename);
 
-        if (batchRvtScriptsFolderPath == null) return;
         var engine = ScriptUtil.CreatePythonEngine();
 
         ScriptUtil.AddBuiltinVariables(
@@ -55,16 +60,10 @@ public static class ScriptHostUtil
 
         var mainModuleScope = ScriptUtil.CreateMainModule(engine);
 
-        var pluginFullFolderPath = Path.GetFullPath(pluginFolderPath);
-
-        var scriptHostFilePath = Path.Combine(batchRvtScriptsFolderPath, BatchScriptHostFilename);
-        var batchRvtFolderPath = GetBatchRvtFolderPath(environmentVariables);
-
         ScriptUtil.AddSearchPaths(engine, new[]
         {
             batchRvtScriptsFolderPath,
-            pluginFullFolderPath,
-            batchRvtFolderPath
+            pluginFullFolderPath
         });
 
         ScriptUtil.AddPythonStandardLibrary(mainModuleScope);
@@ -72,56 +71,5 @@ public static class ScriptHostUtil
         var scriptSource = ScriptUtil.CreateScriptSourceFromFile(engine, scriptHostFilePath);
 
         scriptSource.Execute(mainModuleScope);
-    }
-
-    private static string GetParentFolder(string folderPath)
-    {
-        return Directory.GetParent(folderPath)?.FullName;
-    }
-
-    private static string RemoveTrailingDirectorySeparators(string folderPath)
-    {
-        return folderPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-    }
-
-    private static string GetBatchRvtFolderPath(StringDictionary environmentVariables)
-    {
-        var batchRvtScriptsFolderPath = GetBatchRvtScriptsFolderPath(environmentVariables);
-
-        return batchRvtScriptsFolderPath != null
-            ? GetParentFolder(RemoveTrailingDirectorySeparators(batchRvtScriptsFolderPath))
-            : null;
-    }
-
-    private static string GetBatchRvtScriptsFolderPath(StringDictionary environmentVariables)
-    {
-        return GetEnvironmentVariable(
-            environmentVariables,
-            BATCHRVT_SCRIPTS_FOLDER_PATH__ENVIRONMENT_VARIABLE_NAME
-        );
-    }
-
-    private static string GetEnvironmentVariable(StringDictionary environmentVariables, string variableName)
-    {
-        return environmentVariables[variableName];
-    }
-
-    private static StringDictionary GetEnvironmentVariables()
-    {
-        try
-        {
-            var environmentVariables = new StringDictionary();
-            var ev = Environment.GetEnvironmentVariables();
-            foreach (string key in ev.Keys)
-            {
-                environmentVariables[key] = ev[key].ToString();
-            }
-
-            return environmentVariables;
-        }
-        catch (NullReferenceException)
-        {
-            return null;
-        }
     }
 }

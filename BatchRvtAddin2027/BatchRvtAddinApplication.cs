@@ -35,6 +35,10 @@ namespace BatchRvt.Addin.Revit2027
     [Description("BatchRvtAddin")]
     public class BatchRvtAddinApplication : IExternalApplication
     {
+        // Static keeps the handler alive for the addin's lifetime — without this, .NET 10's GC
+        // can reclaim the local before Revit's UI thread pumps the queued ExternalEvent.
+        private static BatchRvtExternalEventHandler externalEventHandler_;
+
         public Result OnStartup(UIControlledApplication uiApplication)
         {
             SetupBatchScriptHost(uiApplication.ControlledApplication);
@@ -49,8 +53,8 @@ namespace BatchRvt.Addin.Revit2027
         private static void SetupBatchScriptHost(ControlledApplication controlledApplication)
         {
             var pluginFolderPath = Path.GetDirectoryName(typeof(BatchRvtAddinApplication).Assembly.Location);
-            var batchRvtExternalEventHandler = new BatchRvtExternalEventHandler(pluginFolderPath);
-            batchRvtExternalEventHandler.Raise();
+            externalEventHandler_ = new BatchRvtExternalEventHandler(pluginFolderPath);
+            externalEventHandler_.Raise();
         }
     }
 
@@ -69,7 +73,7 @@ namespace BatchRvt.Addin.Revit2027
         {
             try
             {
-                ScriptHostUtil.ExecuteBatchScriptHost(pluginFolderPath_, uiApp);
+                ScriptHostUtil.ExecuteBatchScriptHost(pluginFolderPath_, uiApp, "Scripts34");
             }
             catch (Exception e)
             {
