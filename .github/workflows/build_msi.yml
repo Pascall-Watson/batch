@@ -18,7 +18,9 @@ jobs:
         uses: microsoft/setup-msbuild@v2     
 
       - name: Restore NuGet packages
-        run: nuget restore "RevitBatchProcessor.sln"
+        run: |
+          nuget restore "RevitBatchProcessor.sln"
+          dotnet restore "RevitBatchProcessor.sln"
       
       - name: Setup Python environment
         uses: actions/setup-python@v2
