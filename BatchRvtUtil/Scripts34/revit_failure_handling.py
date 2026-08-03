@@ -54,16 +54,20 @@ def ReportFailureWarning(failure, failureDefinition, output):
 
     if failureSeverity == FailureSeverity.Error:
         if failure.HasResolutions():
-            output()
-            output("\t" + "Applicable resolution types:")
-            output()
-            defaultResolutionType = failureDefinition.GetDefaultResolutionType()
-            for resolutionType in failureDefinition.GetApplicableResolutionTypes():
-                output(
-                    "\t\t" + str(resolutionType) +
-                    (" (Default)" if (resolutionType == defaultResolutionType) else str.Empty) +
-                    " - '" + failureDefinition.GetResolutionCaption(resolutionType) + "'"
-                )
+            if failureDefinition is not None:
+                output()
+                output("\t" + "Applicable resolution types:")
+                output()
+                defaultResolutionType = failureDefinition.GetDefaultResolutionType()
+                for resolutionType in failureDefinition.GetApplicableResolutionTypes():
+                    output(
+                        "\t\t" + str(resolutionType) +
+                        (" (Default)" if (resolutionType == defaultResolutionType) else str.Empty) +
+                        " - '" + failureDefinition.GetResolutionCaption(resolutionType) + "'"
+                    )
+            else:
+                output()
+                output("\t" + "WARNING: Failure definition metadata was unavailable; skipping applicable-resolution details.")
         else:
             output()
             output("\t" + "WARNING: no resolutions available")
@@ -82,6 +86,9 @@ def ProcessFailures(failuresAccessor, output, rollBackOnWarning=False):
             output("Processing Revit document warnings / failures (" + str(failures.Count) + "):")
             for failure in failures:
                 failureDefinition = failureReg.FindFailureDefinition(failure.GetFailureDefinitionId())
+                if failureDefinition is None:
+                    output()
+                    output("\t" + "WARNING: Could not retrieve failure definition metadata for GUID: " + str(failure.GetFailureDefinitionId().Guid))
                 ReportFailureWarning(failure, failureDefinition, output)
                 failureSeverity = failure.GetSeverity()
                 if failureSeverity == FailureSeverity.Warning and not rollBackOnWarning:
@@ -94,7 +101,7 @@ def ProcessFailures(failuresAccessor, output, rollBackOnWarning=False):
                 ):
                     if failure.HasResolutionOfType(FailureResolutionType.UnlockConstraints):
                         failure.SetCurrentResolutionType(FailureResolutionType.UnlockConstraints)
-                    elif failureDefinition.IsResolutionApplicable(FailureResolutionType.UnlockConstraints):
+                    elif failureDefinition is not None and failureDefinition.IsResolutionApplicable(FailureResolutionType.UnlockConstraints):
                         output()
                         output("\t" + "WARNING: UnlockConstraints is not a valid resolution for this failure despite the definition reporting that it is an applicable resolution!")
                     elif failure.HasResolutionOfType(FailureResolutionType.DetachElements):

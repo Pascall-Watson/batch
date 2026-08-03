@@ -102,10 +102,6 @@ def ToGuid(guidOrGuidText):
     return System.Guid(guidOrGuidText) if not isinstance(guidOrGuidText, System.Guid) else guidOrGuidText
 
 
-def ToCloudPath(cloudProjectId, cloudModelId):
-    return ModelPathUtils.ConvertCloudGUIDsToCloudPath(ToGuid(cloudProjectId), ToGuid(cloudModelId))
-
-
 def _append_unique_region_candidate(candidates, candidate):
     if candidate is None:
         return
@@ -189,15 +185,8 @@ def OpenAndActivateDetachAndPreserveWorksets(uiApplication, modelPath, closeAllW
     return uiApplication.OpenAndActivateDocument(modelPath, openOptions, False)
 
 
-def IsRvt2021_OrNewer(application):
-    try:
-        return int(application.VersionNumber) > 2020
-    except:
-        return False
-
-
 def OpenCloudDocument(application, cloudProjectId, cloudModelId, closeAllWorksets=False, worksetConfig=None, audit=False):
-    cloudPath = ToCloudPath2021(cloudProjectId, cloudModelId) if IsRvt2021_OrNewer(application) else ToCloudPath(cloudProjectId, cloudModelId)
+    cloudPath = ToCloudPath2021(cloudProjectId, cloudModelId)
     openOptions = OpenOptions()
     openOptions.SetOpenWorksetsConfiguration(ParseWorksetConfigurationOption(closeAllWorksets, worksetConfig))
     if audit:
@@ -208,7 +197,7 @@ def OpenCloudDocument(application, cloudProjectId, cloudModelId, closeAllWorkset
 
 
 def OpenAndActivateCloudDocument(uiApplication, cloudProjectId, cloudModelId, closeAllWorksets=False, worksetConfig=None, audit=False):
-    cloudPath = ToCloudPath2021(cloudProjectId, cloudModelId) if IsRvt2021_OrNewer(uiApplication.Application) else ToCloudPath(cloudProjectId, cloudModelId)
+    cloudPath = ToCloudPath2021(cloudProjectId, cloudModelId)
     openOptions = OpenOptions()
     openOptions.SetOpenWorksetsConfiguration(ParseWorksetConfigurationOption(closeAllWorksets, worksetConfig))
     if audit:
