@@ -1,31 +1,58 @@
 #
 # Revit Batch Processor - Cloud Region Utilities
 #
-# IronPython 3.4 port (Phase 2b). The original is already Py3-compatible
-# (uses .format(), hasattr, no Py2-specific syntax). Copied verbatim.
+# IronPython 3.4 port (Phase 2b), aligned with the Scripts27 region model.
 #
 
 import clr
 
-# Constants for hardcoded region strings (no official API support, not sure this is correct either...maybe 'APAC'?)
-AUSTRALIA_REGION_STRING = "AUS"
+# Cloud region handling for the Revit 2021+ cloud path API:
+# ModelPathUtils.ConvertCloudGUIDsToCloudPath(string region, Guid, Guid)
+#
+# Canonical region codes follow current ACC/Forma region host identifiers.
+# Alias inputs (for example EMEA, APAC, UK) normalize to canonical region codes.
 
-# Mapping of user-friendly region codes to their descriptions and geographic coverage
+# Canonical region codes used by this module.
 REGION_DESCRIPTIONS = {
-    "US": "United States East Region",
+    "US": "United States",
+    "EU": "European Union",
     "AUS": "Australia",
-    "EU": "Europe, Middle East, Africa",
-    "APAC": "Asia-Pacific, Australia",
+    "GBR": "United Kingdom",
+    "DEU": "Germany",
+    "CAN": "Canada",
+    "IND": "India",
+    "JPN": "Japan",
 }
 
 DEFAULT_REGION = "US"
-FALLBACK_ORDER = ["US", "EU", "APAC"]
 
+# Map external aliases to canonical region codes.
+REGION_CODE_ALIASES = {
+    "APAC": "AUS",
+    "AU": "AUS",
+    "CA": "CAN",
+    "DE": "DEU",
+    "EMEA": "EU",
+    "GB": "GBR",
+    "IN": "IND",
+    "JP": "JPN",
+    "UK": "GBR",
+    "USA": "US",
+}
+
+# Priority order when an explicit region cannot be resolved.
+FALLBACK_ORDER = ["US", "EU", "AUS", "GBR", "DEU", "CAN", "IND", "JPN"]
+
+# Keywords used to infer canonical regions from discovered API region strings.
 REGION_CODE_KEYWORDS = {
     "US": ["CLOUDREGIONUS", "UNITEDSTATES", "US", "USA", "AMERICA"],
-    "EU": ["CLOUDREGIONEMEA", "EMEA", "EUROPE", "EU", "UK", "GERMANY", "MIDDLE", "AFRICA"],
-    "APAC": ["APAC", "ASIA", "PACIFIC", "JAPAN", "INDIA", "SINGAPORE"],
-    "AUS": ["AUS", "AUSTRALIA"],
+    "EU": ["CLOUDREGIONEMEA", "EMEA", "EUROPE", "EU"],
+    "AUS": ["AUS", "AUSTRALIA", "APAC"],
+    "GBR": ["GBR", "UK", "UNITEDKINGDOM", "BRITAIN"],
+    "DEU": ["DEU", "DE", "GERMANY"],
+    "CAN": ["CAN", "CA", "CANADA"],
+    "IND": ["IND", "IN", "INDIA"],
+    "JPN": ["JPN", "JP", "JAPAN"],
 }
 
 
@@ -43,6 +70,13 @@ def _to_region_text(region_value):
         return str(region_value).upper()
     except:
         return ""
+
+
+def _normalize_input_region_code(region_code):
+    if region_code is None:
+        return None
+    normalized = region_code.upper().strip()
+    return REGION_CODE_ALIASES.get(normalized, normalized)
 
 
 def _get_model_path_utils():
@@ -124,23 +158,14 @@ def get_region_api_mapping():
     cloud_region_us, cloud_region_emea = _get_revit_api_constants()
     discovered_regions = _get_discovered_regions()
 
-    apac_region = _find_region_for_code(discovered_regions, "APAC")
-    aus_region = _find_region_for_code(discovered_regions, "AUS")
+    region_mapping = {
+        "US": cloud_region_us if cloud_region_us is not None else (_find_region_for_code(discovered_regions, "US") or "US"),
+        "EU": cloud_region_emea if cloud_region_emea is not None else (_find_region_for_code(discovered_regions, "EU") or "EMEA"),
+    }
 
-    if apac_region is None:
-        apac_region = aus_region
+    for region_code in ["AUS", "GBR", "DEU", "CAN", "IND", "JPN"]:
+        region_mapping[region_code] = _find_region_for_code(discovered_regions, region_code) or region_code
 
-    if aus_region is None:
-        aus_region = apac_region if apac_region is not None else AUSTRALIA_REGION_STRING
-
-    region_mapping = {}
-    if cloud_region_us is not None:
-        region_mapping["US"] = cloud_region_us
-    if cloud_region_emea is not None:
-        region_mapping["EU"] = cloud_region_emea
-    if apac_region is not None:
-        region_mapping["APAC"] = apac_region
-    region_mapping["AUS"] = aus_region
     return region_mapping
 
 
@@ -157,36 +182,38 @@ def GetSupportedRegions():
 def GetRegionDescription(regionCode):
     if regionCode is None:
         return GetRegionDescription(DEFAULT_REGION)
-    return REGION_DESCRIPTIONS.get(regionCode.upper(), "Unknown Region")
+    normalized_region_code = _normalize_input_region_code(regionCode)
+    return REGION_DESCRIPTIONS.get(normalized_region_code, "Unknown Region")
 
 
 def GetRevitApiRegion(regionCode):
     if regionCode is None:
         regionCode = DEFAULT_REGION
     normalized_region_code = NormalizeRegionCode(regionCode)
-    usRegion, euRegion = _get_revit_api_constants()
+    usRegion, _ = _get_revit_api_constants()
     return get_region_api_mapping().get(normalized_region_code, usRegion)
 
 
 def NormalizeRegionCode(regionCode):
     if regionCode is None:
         return DEFAULT_REGION
-    normalized = regionCode.upper().strip()
+    normalized = _normalize_input_region_code(regionCode)
     return normalized if normalized in REGION_DESCRIPTIONS else DEFAULT_REGION
 
 
 def ValidateRegionCode(regionCode):
     if regionCode is None:
         return True
-    return regionCode.upper() in REGION_DESCRIPTIONS
+    normalized = _normalize_input_region_code(regionCode)
+    return normalized in REGION_DESCRIPTIONS
 
 
 def GetFallbackOrder(excludeRegion=None):
-    fallbackList = FALLBACK_ORDER.copy()
+    fallbackList = list(FALLBACK_ORDER)
     if excludeRegion is not None:
-        excludeRegion = excludeRegion.upper()
-        if excludeRegion in fallbackList:
-            fallbackList.remove(excludeRegion)
+        normalized_exclude_region = _normalize_input_region_code(excludeRegion)
+        if normalized_exclude_region in fallbackList:
+            fallbackList.remove(normalized_exclude_region)
     return fallbackList
 
 
@@ -208,28 +235,13 @@ def GetApiRegionName(api_constant):
         return "CloudRegionUS"
     elif cloud_region_emea is not None and api_constant == cloud_region_emea:
         return "CloudRegionEMEA"
-    elif api_constant == AUSTRALIA_REGION_STRING:
-        return "{0} (hardcoded)".format(AUSTRALIA_REGION_STRING)
     else:
         return str(api_constant)
 
 
 def IsDirectApiMapping(regionCode):
-    return GetRevitApiRegion(regionCode) != AUSTRALIA_REGION_STRING
+    return ValidateRegionCode(regionCode)
 
 
 def GetMappingWarnings():
-    warnings = []
-    for regionCode in sorted(REGION_DESCRIPTIONS.keys()):
-        api_constant = GetRevitApiRegion(regionCode)
-        if api_constant == AUSTRALIA_REGION_STRING:
-            warnings.append(
-                "Region '{0}' ({1}) uses hardcoded '{2}' string - no official Revit API support yet.".format(
-                    regionCode, GetRegionDescription(regionCode), AUSTRALIA_REGION_STRING,
-                )
-            )
-    return warnings
-
-
-def GetAustraliaRegionString():
-    return AUSTRALIA_REGION_STRING
+    return []

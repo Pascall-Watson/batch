@@ -205,6 +205,21 @@ def GetActiveDocument(uiapp):
     return uidoc.Document if uidoc is not None else None
 
 
+def IsLocalFileSourcePathArgumentException(exception):
+    try:
+        if exception.ParamName != "sourcePath":
+            return False
+    except Exception:
+        return False
+
+    try:
+        message_text = str(exception.Message).lower()
+    except Exception:
+        message_text = str(exception).lower()
+
+    return "model" in message_text and "local file" in message_text
+
+
 def SafeCloseWithoutSave(doc, isOpenedInUI, closedMessage, output):
     app = doc.Application
     try:
@@ -265,7 +280,7 @@ def WithOpenedNewLocalDocument(uiapp, openInUI, centralFilePath, localFilePath, 
         finally:
             SafeCloseWithoutSave(doc, openInUI, "Closed local file: " + localFilePath, output)
     except ArgumentException as e:
-        if e.Message == "The model is a local file.\r\nParameter name: sourcePath":
+        if IsLocalFileSourcePathArgumentException(e):
             output()
             output("ERROR: The model is a local file. Cannot create another local file from it!")
         else:
@@ -279,8 +294,12 @@ def WithOpenedCloudDocument(uiapp, openInUI, cloudProjectId, cloudModelId, works
     output("Opening cloud model.")
     closeAllWorksets = worksetConfig is None
     if openInUI:
-        uidoc = revit_file_util.OpenAndActivateCloudDocument(uiapp, cloudProjectId, cloudModelId, closeAllWorksets, worksetConfig, audit)
-        doc = uidoc.Document
+        open_result = revit_file_util.OpenAndActivateCloudDocument(uiapp, cloudProjectId, cloudModelId, closeAllWorksets, worksetConfig, audit)
+        if isinstance(open_result, str):
+            output()
+            output(open_result)
+            return None
+        doc = open_result.Document
     else:
         doc = revit_file_util.OpenCloudDocument(app, cloudProjectId, cloudModelId, closeAllWorksets, worksetConfig, audit)
 

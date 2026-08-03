@@ -74,15 +74,18 @@ def ReportFailureWarning(failure, failureDefinition, output):
             output()
             output("\t" + "Applicable resolution types:")
             output()
-            defaultResolutionType = failureDefinition.GetDefaultResolutionType()
-            for resolutionType in failureDefinition.GetApplicableResolutionTypes():
-                output(
-                        "\t\t" +
-                        str(resolutionType) +
-                        (" (Default)" if (resolutionType == defaultResolutionType) else str.Empty) +
-                        " - " +
-                        "'" + failureDefinition.GetResolutionCaption(resolutionType) + "'"
-                    )
+            if failureDefinition is not None:
+                defaultResolutionType = failureDefinition.GetDefaultResolutionType()
+                for resolutionType in failureDefinition.GetApplicableResolutionTypes():
+                    output(
+                            "\t\t" +
+                            str(resolutionType) +
+                            (" (Default)" if (resolutionType == defaultResolutionType) else str.Empty) +
+                            " - " +
+                            "'" + failureDefinition.GetResolutionCaption(resolutionType) + "'"
+                        )
+            else:
+                output("\t\tWARNING: Failure definition metadata is unavailable for this failure.")
         else:
             output()
             output("\t" + "WARNING: no resolutions available")
@@ -117,7 +120,7 @@ def ProcessFailures(failuresAccessor, output, rollBackOnWarning=False):
                     # If Unlock Constraints is a valid resolution type for the current failure, use it.
                     if failure.HasResolutionOfType(FailureResolutionType.UnlockConstraints):
                         failure.SetCurrentResolutionType(FailureResolutionType.UnlockConstraints)
-                    elif failureDefinition.IsResolutionApplicable(FailureResolutionType.UnlockConstraints):
+                    elif failureDefinition is not None and failureDefinition.IsResolutionApplicable(FailureResolutionType.UnlockConstraints):
                         output()
                         output("\t" + "WARNING: UnlockConstraints is not a valid resolution for this failure despite the definition reporting that it is an applicable resolution!")
                     elif failure.HasResolutionOfType(FailureResolutionType.DetachElements):
