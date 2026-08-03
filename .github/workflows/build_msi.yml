@@ -12,7 +12,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v2
         with:
-          ref: master
+          ref: main
 
       - name: Setup MSBuild path
         uses: microsoft/setup-msbuild@v2     
@@ -30,36 +30,37 @@ jobs:
       - name: Get version number
         id: version_num_set
         run: |
-          echo "Version number from tag is ${{github.event.release.tag_name}}"
-            $versionNum = "${{github.event.release.tag_name}}"
-            $versionNum = $versionNum -replace "-beta", ""
-            $version_number = $versionNum -replace "v", ""
-            echo "Numeric only from that is $version_number"
-            echo "version=$version_number" >> $env:GITHUB_OUTPUT
+          $tag = "${{ github.event.release.tag_name }}"
+          $normalizedTag = $tag -replace '^v', ''
+          $versionNumber = $normalizedTag -replace '-beta$', ''
+          $outputBaseFilename = "Pascall-Watson-RevitBatchProcessor-$versionNumber-Setup"
+          $assetFilename = "$outputBaseFilename.exe"
+
+          echo "Version number from tag is $tag"
+          echo "Normalized tag is $normalizedTag"
+          echo "Version number is $versionNumber"
+          echo "Release asset filename is $assetFilename"
+
+          echo "version=$versionNumber" >> $env:GITHUB_OUTPUT
+          echo "output_base_filename=$outputBaseFilename" >> $env:GITHUB_OUTPUT
+          echo "asset_filename=$assetFilename" >> $env:GITHUB_OUTPUT
           
       - name: Update installer config
         run: |
-            $content = Get-Content -Path Setup/RevitBatchProcessor.iss -Raw
-            echo "Input installer config is $content"
-            $tag = "${{ github.event.release.tag_name }}"
-            # Replace the entire OutputBaseFilename line based on tag
-            if ($tag -like "*-beta") {
-                $content = $content -replace 'OutputBaseFilename=.*', 'OutputBaseFilename=RevitBatchProcessorSetup_v{#AppVersion}-beta'
-            } else {
-                $content = $content -replace 'OutputBaseFilename=.*', 'OutputBaseFilename=RevitBatchProcessorSetup_v{#AppVersion}'
-            }
-            $content = $content -replace '#define AppVersion ".*"', '#define AppVersion "${{steps.version_num_set.outputs.version}}"'
-            
-            
-            echo "Updated installer config is $content"
-            Set-Content -Path Setup/RevitBatchProcessor.iss -Value $content
+          $content = Get-Content -Path Setup/RevitBatchProcessor.iss -Raw
+          echo "Input installer config is $content"
+          $content = $content -replace 'OutputBaseFilename=.*', 'OutputBaseFilename=${{steps.version_num_set.outputs.output_base_filename}}'
+          $content = $content -replace '#define AppVersion ".*"', '#define AppVersion "${{steps.version_num_set.outputs.version}}"'
+
+          echo "Updated installer config is $content"
+          Set-Content -Path Setup/RevitBatchProcessor.iss -Value $content
 
       - name: Update version number - GlobalAssemblyInfo.cs
         run: |
           $assemblyInfoFile = "Common/GlobalAssemblyInfo.cs"
           $fileContent = Get-Content -Path $assemblyInfoFile -Raw
           echo "Input version number is $fileContent"
-          $fileContent = $fileContent -replace '\("\d+\.\d+\.\d+"\)', "(`"${{steps.version_num_set.outputs.version}}`")" 
+          $fileContent = $fileContent -replace '\("\d+\.\d+\.\d+(\.\d+)?"\)', "(`"${{steps.version_num_set.outputs.version}}`")"
           echo "Updated version number is $fileContent"
           Set-Content -Path $assemblyInfoFile -Value $fileContent            
 
@@ -114,8 +115,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: Setup\Output\RevitBatchProcessorSetup_${{github.event.release.tag_name}}.exe
-          asset_name: RevitBatchProcessorSetup_${{github.event.release.tag_name}}.exe
+          asset_path: Setup\Output\${{steps.version_num_set.outputs.asset_filename}}
+          asset_name: ${{steps.version_num_set.outputs.asset_filename}}
           asset_content_type: application/octet-stream
 
       - name: Update readme with new version
