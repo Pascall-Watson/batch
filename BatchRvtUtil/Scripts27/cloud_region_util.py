@@ -285,7 +285,7 @@ def GetFallbackOrder(excludeRegion=None):
     Returns:
         list: Ordered list of region codes for fallback attempts
     """
-    fallbackList = FALLBACK_ORDER.copy()
+    fallbackList = list(FALLBACK_ORDER)
 
     if excludeRegion is not None:
         excludeRegion = excludeRegion.upper()

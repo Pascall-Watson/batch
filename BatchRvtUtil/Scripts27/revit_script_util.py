@@ -273,8 +273,8 @@ def WithOpenedCloudDocument(uiapp, openInUI, cloudProjectId, cloudModelId, works
     output("Opening cloud model.")
     closeAllWorksets = worksetConfig is None
     if openInUI:
-        uidoc = revit_file_util.OpenAndActivateCloudDocument(uiapp, cloudProjectId, cloudModelId, closeAllWorksets, worksetConfig, audit)
-        doc = uidoc.Document
+        openResult = revit_file_util.OpenAndActivateCloudDocument(uiapp, cloudProjectId, cloudModelId, closeAllWorksets, worksetConfig, audit)
+        doc = openResult.Document if not isinstance(openResult, str) else openResult
     else:
         doc = revit_file_util.OpenCloudDocument(app, cloudProjectId, cloudModelId, closeAllWorksets, worksetConfig, audit)
     
