@@ -13,7 +13,7 @@ SetupLogging=True
 ArchitecturesInstallIn64BitMode=x64compatible
 ArchitecturesAllowed=x64compatible
 DefaultGroupName=Revit Batch Processor
-OutputBaseFilename=RevitBatchProcessorSetup_v{#AppVersion}
+OutputBaseFilename=Pascall-Watson-RevitBatchProcessor-{#AppVersion}-Setup
 OutputDir=Output
 
 ; TODO VERSION UPDATE - ADD FILES TO INSTALLER CONFIG
