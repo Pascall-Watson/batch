@@ -190,8 +190,8 @@ def ToCloudPath2021(cloudProjectId, cloudModelId, region=None):
 
 **Example:**
 ```
-2020 75b6464c-ba0f-4529-b049-0de9e473c2d6 0d54b8cc-3837-4df2-8c8e-0a94f4828868
-2021 c0dc2fda-fd34-42fe-8bb7-bd9f43841dbf d9f011d6-d52c-4c9f-9d7b-eb8388bd3ed0
+2024 75b6464c-ba0f-4529-b049-0de9e473c2d6 0d54b8cc-3837-4df2-8c8e-0a94f4828868
+2025 c0dc2fda-fd34-42fe-8bb7-bd9f43841dbf d9f011d6-d52c-4c9f-9d7b-eb8388bd3ed0
 ```
 
 ### New Format (With Region Support)
@@ -201,9 +201,9 @@ def ToCloudPath2021(cloudProjectId, cloudModelId, region=None):
 
 **Example:**
 ```
-2020 75b6464c-ba0f-4529-b049-0de9e473c2d6 0d54b8cc-3837-4df2-8c8e-0a94f4828868 EU
-2021 c0dc2fda-fd34-42fe-8bb7-bd9f43841dbf d9f011d6-d52c-4c9f-9d7b-eb8388bd3ed0 US
-2022 another-project-guid another-model-guid APAC
+2024 75b6464c-ba0f-4529-b049-0de9e473c2d6 0d54b8cc-3837-4df2-8c8e-0a94f4828868 EU
+2025 c0dc2fda-fd34-42fe-8bb7-bd9f43841dbf d9f011d6-d52c-4c9f-9d7b-eb8388bd3ed0 US
+2026 another-project-guid another-model-guid APAC
 ```
 
 ### Supported Region Codes

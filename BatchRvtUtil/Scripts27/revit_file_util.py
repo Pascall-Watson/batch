@@ -366,10 +366,10 @@ def TryGetBasicFileInfo(revitFilePath):
 def GetSavedInVersion(basicFileInfo):
     savedInVersion = None
     try:
-        # <= Revit 2019
+        # Legacy API property name.
         savedInVersion = basicFileInfo.SavedInVersion
     except System.MissingMemberException, e:
-        # Revit 2020+
+        # Newer API property name.
         savedInVersion = basicFileInfo.Format
     return savedInVersion
 

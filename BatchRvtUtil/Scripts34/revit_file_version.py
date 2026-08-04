@@ -133,7 +133,7 @@ def ExtractRevitVersionInfoFromText(revitVersionInfoText):
     revitVersionDescription = str.Empty
     lines = util.ReadLinesFromText(revitVersionInfoText)
     indexedLines = [[index, line] for index, line in enumerate(lines)]
-    # Revit 2019 (and onwards?) has 'Build' and 'Format' properties instead of 'Revit Build'.
+    # Newer Revit versions expose 'Build' and 'Format' properties instead of 'Revit Build'.
     formatLine = indexedLines.SingleOrDefault(lambda l: l[1].StartsWith(FORMAT_PROPERTY))
     buildLine = indexedLines.SingleOrDefault(lambda l: l[1].StartsWith(BUILD_PROPERTY))
     if buildLine is not None:
