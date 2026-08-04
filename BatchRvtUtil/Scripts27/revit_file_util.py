@@ -123,12 +123,6 @@ def ToUserVisiblePath(modelPath):
 def ToGuid(guidOrGuidText):
     return System.Guid(guidOrGuidText) if not isinstance(guidOrGuidText, System.Guid) else guidOrGuidText
 
-def ToCloudPath(cloudProjectId, cloudModelId):
-    cloudProjectGuid = ToGuid(cloudProjectId)
-    cloudModelGuid = ToGuid(cloudModelId)
-    cloudPath = ModelPathUtils.ConvertCloudGUIDsToCloudPath(cloudProjectGuid, cloudModelGuid)
-    return cloudPath
-
 def _append_unique_region_candidate(candidates, candidate):
     if candidate is None:
         return
@@ -223,17 +217,8 @@ def OpenAndActivateDetachAndPreserveWorksets(uiApplication, modelPath, closeAllW
         openOptions.Audit = True
     return uiApplication.OpenAndActivateDocument(modelPath, openOptions, False)
 
-def IsRvt2021_OrNewer(application):
-    try:
-        return int(application.VersionNumber) > 2020
-    except:
-        return false
-
 def OpenCloudDocument(application, cloudProjectId, cloudModelId, closeAllWorksets=False, worksetConfig=None, audit=False):
-    if IsRvt2021_OrNewer(application):
-        cloudPath = ToCloudPath2021(cloudProjectId, cloudModelId)
-    else:
-        cloudPath = ToCloudPath(cloudProjectId, cloudModelId)
+    cloudPath = ToCloudPath2021(cloudProjectId, cloudModelId)
     openOptions = OpenOptions()
     worksetConfig = ParseWorksetConfigurationOption(closeAllWorksets, worksetConfig)
     openOptions.SetOpenWorksetsConfiguration(worksetConfig)
@@ -245,10 +230,7 @@ def OpenCloudDocument(application, cloudProjectId, cloudModelId, closeAllWorkset
         return application.OpenDocumentFile(cloudPath, openOptions)
 
 def OpenAndActivateCloudDocument(uiApplication, cloudProjectId, cloudModelId, closeAllWorksets=False, worksetConfig=None, audit=False):
-    if IsRvt2021_OrNewer(uiApplication.Application):
-        cloudPath = ToCloudPath2021(cloudProjectId, cloudModelId)
-    else:
-        cloudPath = ToCloudPath(cloudProjectId, cloudModelId)
+    cloudPath = ToCloudPath2021(cloudProjectId, cloudModelId)
     openOptions = OpenOptions()
     worksetConfig = ParseWorksetConfigurationOption(closeAllWorksets, worksetConfig)
     openOptions.SetOpenWorksetsConfiguration(worksetConfig)
