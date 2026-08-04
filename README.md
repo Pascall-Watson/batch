@@ -181,6 +181,12 @@ Build a release configuration:
 msbuild .\RevitBatchProcessor.sln /p:Configuration=Release /p:Platform=x64
 ```
 
+Skip local add-in deployment during build verification (deployment is still enabled by default):
+
+```powershell
+msbuild .\RevitBatchProcessor.sln /p:Configuration=Release /p:Platform=x64 /p:EnableAddinDeployment=false
+```
+
 Run the command-line processor with an exported settings file:
 
 ```powershell

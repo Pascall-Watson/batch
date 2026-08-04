@@ -65,7 +65,7 @@ jobs:
 
       - name: Build solution
         run: |
-            msbuild "RevitBatchProcessor.sln" /p:Configuration=Release /p:Platform="x64" /m
+            msbuild "RevitBatchProcessor.sln" /p:Configuration=Release /p:Platform="x64" /p:EnableAddinDeployment=false /m
 
       - name: Verify installer sources exist
         shell: pwsh
