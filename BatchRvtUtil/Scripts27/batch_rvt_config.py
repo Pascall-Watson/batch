@@ -202,6 +202,20 @@ def ConfigureBatchRvtSettings(batchRvtConfig, batchRvtSettings, output):
     batchRvtConfig.AuditOnOpening = batchRvtSettings.AuditOnOpening.GetValue()
     batchRvtConfig.OpenInUI = batchRvtSettings.OpenInUI.GetValue()
 
+    if batchRvtConfig.SingleRevitTaskRevitVersion < RevitVersion.SupportedRevitVersion.Revit2024:
+        output()
+        output("ERROR: Legacy single-task Revit versions are not supported. Use Revit 2024-2027.")
+        aborted = True
+
+    if (
+            batchRvtConfig.RevitFileProcessingOption == BatchRvt.RevitFileProcessingOption.UseSpecificRevitVersion
+            and
+            batchRvtConfig.BatchRevitTaskRevitVersion < RevitVersion.SupportedRevitVersion.Revit2024
+        ):
+        output()
+        output("ERROR: Legacy batch Revit target versions are not supported. Use Revit 2024-2027.")
+        aborted = True
+
     if not File.Exists(batchRvtConfig.ScriptFilePath):
         output()
         output("ERROR: No script file specified or script file not found.")
@@ -342,6 +356,10 @@ def GetBatchRvtSettings(settingsFilePath, output):
         if not isSettingsLoaded:
             output()
             output("ERROR: Could not load settings from the settings file!")
+            loadException = batchRvtSettings.LastLoadException
+            if loadException is not None:
+                output()
+                output("ERROR: " + str(loadException))
             aborted = True
     return batchRvtSettings if not aborted else None
 
@@ -530,7 +548,9 @@ def ConfigureBatchRvt(commandSettingsData, output):
             aborted,
             commandLineOptions,
             CommandSettings.REVIT_VERSION_OPTION,
-            output
+            output,
+            invalidValueErrorMessage="ERROR: Invalid or unsupported Revit version. Supported versions are 2024-2027.",
+            missingValueErrorMessage="ERROR: Missing Revit version option value!"
         )
     if not aborted and revitVersionOption is not None:
         output()
