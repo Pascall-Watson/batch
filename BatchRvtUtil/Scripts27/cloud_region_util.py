@@ -19,36 +19,53 @@
 
 import clr
 
-# Constants for hardcoded region strings (no official API support, not sure this is correct either...maybe 'APAC'?)
-AUSTRALIA_REGION_STRING = "AUS"
+# Cloud region handling for the Revit 2021+ cloud path API:
+# ModelPathUtils.ConvertCloudGUIDsToCloudPath(string region, Guid, Guid)
+#
+# Canonical region codes follow current ACC/Forma region host identifiers.
+# Alias inputs (for example EMEA, APAC, UK) normalize to canonical region codes.
 
-# https://aps.autodesk.com/blog/expanding-regional-offerings-uk-germany-japan-india-and-canada
-# On June 30, Autodesk announced the availability of five (5) additional regions as a primary storage location for your project data for certain Autodesk Construction Cloud (ACC) products:
-# the United Kingdom, Germany, Japan, Canada, and India.
-# For example, as a primary account admin , you can create an ACC hub in any of the regions above for your team in manage.autodesk.com and activate an Autodesk BIM Collaborate account.
-# The newly created ACC account will use the specified region as the primary storage location for your Autodesk BIM Collaborate project data.
-# no idea what the region strings are for these...
-
-# Mapping of user-friendly region codes to their descriptions and geographic coverage
+# Canonical region codes used by this module.
 REGION_DESCRIPTIONS = {
-    "US": "United States East Region",
+    "US": "United States",
+    "EU": "European Union",
     "AUS": "Australia",
-    "EU": "Europe, Middle East, Africa",
-    "APAC": "Asia-Pacific, Australia",
+    "GBR": "United Kingdom",
+    "DEU": "Germany",
+    "CAN": "Canada",
+    "IND": "India",
+    "JPN": "Japan",
 }
 
-# Default region when none is specified
 DEFAULT_REGION = "US"
 
-# Priority order for fallback attempts
-FALLBACK_ORDER = ["US", "EU", "APAC"]
+# Map external aliases to canonical region codes.
+REGION_CODE_ALIASES = {
+    "APAC": "AUS",
+    "AU": "AUS",
+    "CA": "CAN",
+    "DE": "DEU",
+    "EMEA": "EU",
+    "GB": "GBR",
+    "IN": "IND",
+    "JP": "JPN",
+    "UK": "GBR",
+    "USA": "US",
+}
 
-# Keywords used to infer region identity from dynamically discovered region names.
+# Priority order when an explicit region cannot be resolved.
+FALLBACK_ORDER = ["US", "EU", "AUS", "GBR", "DEU", "CAN", "IND", "JPN"]
+
+# Keywords used to infer canonical regions from discovered API region strings.
 REGION_CODE_KEYWORDS = {
     "US": ["CLOUDREGIONUS", "UNITEDSTATES", "US", "USA", "AMERICA"],
-    "EU": ["CLOUDREGIONEMEA", "EMEA", "EUROPE", "EU", "UK", "GERMANY", "MIDDLE", "AFRICA"],
-    "APAC": ["APAC", "ASIA", "PACIFIC", "JAPAN", "INDIA", "SINGAPORE"],
-    "AUS": ["AUS", "AUSTRALIA"],
+    "EU": ["CLOUDREGIONEMEA", "EMEA", "EUROPE", "EU"],
+    "AUS": ["AUS", "AUSTRALIA", "APAC"],
+    "GBR": ["GBR", "UK", "UNITEDKINGDOM", "BRITAIN"],
+    "DEU": ["DEU", "DE", "GERMANY"],
+    "CAN": ["CAN", "CA", "CANADA"],
+    "IND": ["IND", "IN", "INDIA"],
+    "JPN": ["JPN", "JP", "JAPAN"],
 }
 
 
@@ -66,6 +83,13 @@ def _to_region_text(region_value):
         return str(region_value).upper()
     except:
         return ""
+
+
+def _normalize_input_region_code(region_code):
+    if region_code is None:
+        return None
+    normalized = region_code.upper().strip()
+    return REGION_CODE_ALIASES.get(normalized, normalized)
 
 
 def _get_model_path_utils():
@@ -106,8 +130,7 @@ def _find_region_by_keywords(regions, keywords):
 
 
 def _find_region_for_code(regions, region_code):
-    keywords = REGION_CODE_KEYWORDS.get(region_code, [])
-    return _find_region_by_keywords(regions, keywords)
+    return _find_region_by_keywords(regions, REGION_CODE_KEYWORDS.get(region_code, []))
 
 
 def _get_discovered_regions():
@@ -122,8 +145,7 @@ def _get_discovered_regions():
 
 def _get_revit_api_constants():
     """
-    Lazy loading function to import RevitAPI only when needed.
-    This prevents import errors when the script is loaded without Revit access.
+    Resolve baseline US/EU API region constants with graceful fallbacks.
 
     Returns:
         tuple: (ModelPathUtils.CloudRegionUS, ModelPathUtils.CloudRegionEMEA)
@@ -160,8 +182,11 @@ def GetDiscoveredApiRegions():
 
 def get_region_api_mapping():
     """
-    Get the mapping of user-friendly region codes to actual Revit API constants.
-    Uses lazy loading to avoid importing RevitAPI until needed.
+    Get a canonical region code -> API region value mapping.
+
+    For US/EU, prefer explicit Revit constants when available.
+    For other regions, prefer discovered runtime values and fall back to
+    canonical region code strings used by the cloud API.
 
     Returns:
         dict: Mapping of region codes to API constants
@@ -169,23 +194,13 @@ def get_region_api_mapping():
     cloud_region_us, cloud_region_emea = _get_revit_api_constants()
     discovered_regions = _get_discovered_regions()
 
-    apac_region = _find_region_for_code(discovered_regions, "APAC")
-    aus_region = _find_region_for_code(discovered_regions, "AUS")
+    region_mapping = {
+        "US": cloud_region_us if cloud_region_us is not None else (_find_region_for_code(discovered_regions, "US") or "US"),
+        "EU": cloud_region_emea if cloud_region_emea is not None else (_find_region_for_code(discovered_regions, "EU") or "EMEA"),
+    }
 
-    if apac_region is None:
-        apac_region = aus_region
-
-    if aus_region is None:
-        aus_region = apac_region if apac_region is not None else AUSTRALIA_REGION_STRING
-
-    region_mapping = {}
-    if cloud_region_us is not None:
-        region_mapping["US"] = cloud_region_us
-    if cloud_region_emea is not None:
-        region_mapping["EU"] = cloud_region_emea
-    if apac_region is not None:
-        region_mapping["APAC"] = apac_region
-    region_mapping["AUS"] = aus_region
+    for region_code in ["AUS", "GBR", "DEU", "CAN", "IND", "JPN"]:
+        region_mapping[region_code] = _find_region_for_code(discovered_regions, region_code) or region_code
 
     return region_mapping
 
@@ -198,7 +213,7 @@ def get_unrecognised_region_msg():
 
 def GetSupportedRegions():
     """
-    Returns a dictionary of all supported region codes with their descriptions.
+    Returns canonical region codes and descriptions used by Scripts27.
 
     Returns:
         dict: Region code -> Description mapping
@@ -219,7 +234,8 @@ def GetRegionDescription(regionCode):
     if regionCode is None:
         return GetRegionDescription(DEFAULT_REGION)
 
-    return REGION_DESCRIPTIONS.get(regionCode.upper(), "Unknown Region")
+    normalized_region_code = _normalize_input_region_code(regionCode)
+    return REGION_DESCRIPTIONS.get(normalized_region_code, "Unknown Region")
 
 
 def GetRevitApiRegion(regionCode):
@@ -230,13 +246,13 @@ def GetRevitApiRegion(regionCode):
         regionCode (str): User-friendly region code
 
     Returns:
-        Revit API CloudRegion constant or hardcoded string
+        Revit API region value (constant or string)
     """
     if regionCode is None:
         regionCode = DEFAULT_REGION
 
     normalized_region_code = NormalizeRegionCode(regionCode)
-    usRegion, euRegion = _get_revit_api_constants()
+    usRegion, _ = _get_revit_api_constants()
     regionMapping = get_region_api_mapping()
 
     return regionMapping.get(normalized_region_code, usRegion)
@@ -250,12 +266,12 @@ def NormalizeRegionCode(regionCode):
         regionCode (str): Region code to normalize
 
     Returns:
-        str: Normalized region code or DEFAULT_REGION if invalid
+        str: Canonical region code or DEFAULT_REGION if invalid
     """
     if regionCode is None:
         return DEFAULT_REGION
 
-    normalized = regionCode.upper().strip()
+    normalized = _normalize_input_region_code(regionCode)
     return normalized if normalized in REGION_DESCRIPTIONS else DEFAULT_REGION
 
 
@@ -272,7 +288,8 @@ def ValidateRegionCode(regionCode):
     if regionCode is None:
         return True  # None is valid (defaults to DEFAULT_REGION)
 
-    return regionCode.upper() in REGION_DESCRIPTIONS
+    normalized = _normalize_input_region_code(regionCode)
+    return normalized in REGION_DESCRIPTIONS
 
 
 def GetFallbackOrder(excludeRegion=None):
@@ -285,12 +302,12 @@ def GetFallbackOrder(excludeRegion=None):
     Returns:
         list: Ordered list of region codes for fallback attempts
     """
-    fallbackList = FALLBACK_ORDER.copy()
+    fallbackList = list(FALLBACK_ORDER)
 
     if excludeRegion is not None:
-        excludeRegion = excludeRegion.upper()
-        if excludeRegion in fallbackList:
-            fallbackList.remove(excludeRegion)
+        normalized_exclude_region = _normalize_input_region_code(excludeRegion)
+        if normalized_exclude_region in fallbackList:
+            fallbackList.remove(normalized_exclude_region)
 
     return fallbackList
 
@@ -330,53 +347,31 @@ def GetApiRegionName(api_constant):
         return "CloudRegionUS"
     elif cloud_region_emea is not None and api_constant == cloud_region_emea:
         return "CloudRegionEMEA"
-    elif api_constant == AUSTRALIA_REGION_STRING:
-        return "{0} (hardcoded)".format(AUSTRALIA_REGION_STRING)
     else:
         return str(api_constant)
 
 
 def IsDirectApiMapping(regionCode):
     """
-    Check if a region code maps directly to a Revit API constant or is approximated.
+    Check if a region code resolves to a supported canonical region.
 
     Args:
         regionCode (str): Region code to check
 
     Returns:
-        bool: True if direct mapping, False if approximated
+        bool: True if supported, False otherwise
     """
-    api_constant = GetRevitApiRegion(regionCode)
-    return api_constant != AUSTRALIA_REGION_STRING
+    return ValidateRegionCode(regionCode)
 
 
 def GetMappingWarnings():
     """
-    Get warnings about regions that don't have direct API mappings.
+    Get warnings about non-direct mappings.
+
+    Region mappings are exact for the supported canonical and alias codes,
+    so this returns an empty list.
 
     Returns:
-        list: List of warning messages for approximated regions
+        list: Always empty
     """
-    warnings = []
-    for regionCode in sorted(REGION_DESCRIPTIONS.keys()):
-        api_constant = GetRevitApiRegion(regionCode)
-        if api_constant == AUSTRALIA_REGION_STRING:
-            warnings.append(
-                "Region '{0}' ({1}) uses hardcoded '{2}' string - no official Revit API support yet.".format(
-                    regionCode,
-                    GetRegionDescription(regionCode),
-                    AUSTRALIA_REGION_STRING,
-                )
-            )
-    return warnings
-
-
-def GetAustraliaRegionString():
-    """
-    Get the hardcoded Australia region string.
-    Useful for external code that needs to check against this value.
-
-    Returns:
-        str: The Australia region string constant
-    """
-    return AUSTRALIA_REGION_STRING
+    return []
