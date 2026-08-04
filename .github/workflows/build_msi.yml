@@ -17,6 +17,11 @@ jobs:
       - name: Setup MSBuild path
         uses: microsoft/setup-msbuild@v2     
 
+      - name: Setup .NET SDK from global.json
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
       - name: Restore NuGet packages
         run: |
           nuget restore "RevitBatchProcessor.sln"
@@ -99,6 +104,7 @@ jobs:
             } else {
               Write-Host "The following required sources were NOT found:" 
               $missing | ForEach-Object { Write-Host $_ }
+              exit 1
             }
 
       - name: Create installer file
