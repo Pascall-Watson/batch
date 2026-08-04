@@ -218,6 +218,10 @@ public class EnumSetting<T> : OptionalSetting<T>
         if (!Enum.TryParse<T>(trimmedValue, true, out var enumValue))
             throw new FormatException($"Enum setting value '{trimmedValue}' is invalid for type '{typeof(T).Name}'.");
 
+        if (!Enum.IsDefined(typeof(T), enumValue))
+            throw new FormatException(
+                $"Enum setting value '{trimmedValue}' is not a defined member of type '{typeof(T).Name}'.");
+
         // Enforce the reduced supported version policy at settings load time.
         if (typeof(T) == typeof(RevitVersion.SupportedRevitVersion))
         {

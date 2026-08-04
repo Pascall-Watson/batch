@@ -164,6 +164,46 @@ namespace BatchRvtUtil.Tests
             }
         }
 
+        [Fact]
+        public void LoadFromFile_ShouldRejectUndefinedNumericRevitVersionSetting()
+        {
+            var settingsFilePath = CreateTempSettingsFile(
+                "{\"singleRevitTaskRevitVersion\":\"2023\"}");
+
+            try
+            {
+                var settings = new BatchRvtSettings();
+                var loaded = settings.LoadFromFile(settingsFilePath);
+
+                Assert.False(loaded);
+                Assert.IsType<FormatException>(settings.LastLoadException);
+            }
+            finally
+            {
+                File.Delete(settingsFilePath);
+            }
+        }
+
+        [Fact]
+        public void LoadFromFile_ShouldRejectUndefinedNumericWorksetOptionSetting()
+        {
+            var settingsFilePath = CreateTempSettingsFile(
+                "{\"worksetConfigurationOption\":\"99\"}");
+
+            try
+            {
+                var settings = new BatchRvtSettings();
+                var loaded = settings.LoadFromFile(settingsFilePath);
+
+                Assert.False(loaded);
+                Assert.IsType<FormatException>(settings.LastLoadException);
+            }
+            finally
+            {
+                File.Delete(settingsFilePath);
+            }
+        }
+
         private static string CreateTempSettingsFile(string json)
         {
             var filePath = Path.GetTempFileName();
