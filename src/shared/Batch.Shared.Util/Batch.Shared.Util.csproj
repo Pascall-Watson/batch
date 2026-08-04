@@ -15,12 +15,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BatchRvtScriptHost\BatchRvtScriptHost.csproj" />
+    <ProjectReference Include="..\Batch.Shared.ScriptHost\Batch.Shared.ScriptHost.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\References\JSON.NET\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\..\third_party\References\JSON.NET\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>

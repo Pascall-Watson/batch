@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
     <OutputType>Library</OutputType>
@@ -37,8 +37,8 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BatchRvtScriptHost\BatchRvtScriptHost.csproj" />
-    <ProjectReference Include="..\BatchRvtUtil\BatchRvtUtil.csproj" />
+    <ProjectReference Include="..\..\shared\Batch.Shared.ScriptHost\Batch.Shared.ScriptHost.csproj" />
+    <ProjectReference Include="..\..\shared\Batch.Shared.Util\Batch.Shared.Util.csproj" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(EnableAddinDeployment)' == 'true'">
