@@ -1,4 +1,4 @@
-﻿//
+//
 // Revit Batch Processor
 //
 // Copyright (c) 2020  Daniel Rumery, BVN
@@ -22,11 +22,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using BatchRvt.ScriptHost;
+using Batch.Shared.ScriptHost;
 using ScriptingHosting = Microsoft.Scripting.Hosting;
 using IronPythonHosting = IronPython.Hosting;
 
-namespace BatchRvtUtil;
+namespace Batch.Shared.Util;
 
 public static class PathUtil
 {

@@ -8,8 +8,8 @@
     <ProjectGuid>{B2FED296-9EA0-41DD-BB2F-951D481F527B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BatchRevitDynamo</RootNamespace>
-    <AssemblyName>BatchRevitDynamo</AssemblyName>
+    <RootNamespace>Batch.Integration.Dynamo</RootNamespace>
+    <AssemblyName>Batch.Integration.Dynamo</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <FileAlignment>512</FileAlignment>
@@ -108,7 +108,7 @@
   <ItemGroup>
     <ProjectReference Include="..\BatchRvtUtil\BatchRvtUtil.csproj">
       <Project>{b880dd15-184b-4ce2-86fc-08bac05e0271}</Project>
-      <Name>BatchRvtUtil</Name>
+      <Name>Batch.Shared.Util</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

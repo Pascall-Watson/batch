@@ -2,8 +2,8 @@
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
     <OutputType>Library</OutputType>
-    <RootNamespace>BatchRvtAddin2024</RootNamespace>
-    <AssemblyName>BatchRvtAddin2024</AssemblyName>
+    <RootNamespace>Batch.AddIn.Revit2024</RootNamespace>
+    <AssemblyName>Batch.AddIn.2024</AssemblyName>
     <Deterministic>true</Deterministic>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 

@@ -1,4 +1,4 @@
-﻿//
+//
 // Revit Batch Processor
 //
 // Copyright (c) 2020  Daniel Rumery, BVN
@@ -24,11 +24,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("BatchRvtGUI")]
+[assembly: AssemblyTitle("Batch.App.Gui")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("BatchRvtGUI")]
+[assembly: AssemblyProduct("Batch.App.Gui")]
 [assembly: AssemblyCopyright("Copyright © 2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

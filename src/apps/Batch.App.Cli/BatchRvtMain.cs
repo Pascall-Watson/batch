@@ -1,4 +1,4 @@
-﻿//
+//
 // Revit Batch Processor
 //
 // Copyright (c) 2020  Daniel Rumery, BVN
@@ -22,9 +22,9 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using BatchRvtUtil;
+using Batch.Shared.Util;
 
-namespace BatchRvtCommand;
+namespace Batch.App.Cli;
 
 public class BatchRvtMain
 {

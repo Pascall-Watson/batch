@@ -24,10 +24,10 @@ using System.IO;
 using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.UI;
-using BatchRvt.ScriptHost;
+using Batch.Shared.ScriptHost;
 using WinForms = System.Windows.Forms;
 
-namespace BatchRvt.Addin.Revit2024
+namespace Batch.AddIn.Revit2024
 {
     [Transaction(TransactionMode.Manual)]
     [Regeneration(RegenerationOption.Manual)]

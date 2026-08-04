@@ -1,4 +1,4 @@
-﻿//
+//
 // Revit Batch Processor
 //
 // Copyright (c) 2020  Daniel Rumery, BVN
@@ -25,7 +25,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace BatchRvtUtil;
+namespace Batch.Shared.Util;
 
 public class LogFile
 {

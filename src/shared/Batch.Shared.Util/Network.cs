@@ -1,4 +1,4 @@
-﻿//
+//
 // Revit Batch Processor
 //
 // Copyright (c) 2020  Daniel Rumery, BVN
@@ -24,7 +24,7 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 
-namespace BatchRvtUtil;
+namespace Batch.Shared.Util;
 
 /// <summary>
 ///     This class is used by Python scripts

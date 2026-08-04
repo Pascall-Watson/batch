@@ -1,4 +1,4 @@
-﻿namespace BatchRvtGUI
+namespace Batch.App.Gui
 {
     partial class BatchRvtGuiForm
     {

@@ -1,4 +1,4 @@
-﻿//
+//
 // Revit Batch Processor
 //
 // Copyright (c) 2020  Daniel Rumery, BVN
@@ -20,7 +20,7 @@
 
 using System.IO;
 
-namespace BatchRvt.ScriptHost.Util;
+namespace Batch.Shared.ScriptHost.Util;
 
 public static class TextFileUtil
 {

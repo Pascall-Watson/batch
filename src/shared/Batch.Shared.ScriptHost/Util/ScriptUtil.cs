@@ -1,4 +1,4 @@
-﻿//
+//
 // Revit Batch Processor
 //
 // Copyright (c) 2020  Daniel Rumery, BVN
@@ -21,7 +21,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using BatchRvt.ScriptHost.Util;
+using Batch.Shared.ScriptHost.Util;
 #if !NET10_0_OR_GREATER
 using IronPython.Modules;
 #endif
@@ -29,7 +29,7 @@ using MSScripting = Microsoft.Scripting;
 using ScriptingHosting = Microsoft.Scripting.Hosting;
 using IronPythonHosting = IronPython.Hosting;
 
-namespace BatchRvt.ScriptHost;
+namespace Batch.Shared.ScriptHost;
 
 public static class ScriptUtil
 {

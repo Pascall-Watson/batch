@@ -1,4 +1,4 @@
-﻿//
+//
 // Revit Batch Processor
 //
 // Copyright (c) 2020  Daniel Rumery, BVN
@@ -22,7 +22,7 @@ using System;
 using System.IO;
 using System.Linq;
 
-namespace BatchRvtUtil;
+namespace Batch.Shared.Util;
 
 public static class ExcelUtil
 {

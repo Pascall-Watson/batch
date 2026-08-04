@@ -1,4 +1,4 @@
-﻿//
+//
 // Revit Batch Processor
 //
 // Copyright (c) 2020  Daniel Rumery, BVN
@@ -19,9 +19,9 @@
 //
 
 using System.Collections.Generic;
-using BatchRvtUtil;
+using Batch.Shared.Util;
 
-namespace BatchRevitDynamo;
+namespace Batch.Integration.Dynamo;
 
 public static class RevitBatchProcessor
 {

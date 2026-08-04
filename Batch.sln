@@ -3,39 +3,39 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BatchRvt", "src\apps\Batch.App.Cli\BatchRvt.csproj", "{C877620C-DE32-455C-BF21-8F3E73E9DF68}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Batch.App.Cli", "src\apps\Batch.App.Cli\Batch.App.Cli.csproj", "{C877620C-DE32-455C-BF21-8F3E73E9DF68}"
 	ProjectSection(ProjectDependencies) = postProject
 		{673D1FB5-CFB2-4BDF-9609-C43979DD7197} = {673D1FB5-CFB2-4BDF-9609-C43979DD7197}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BatchRvtScriptHost", "src\shared\Batch.Shared.ScriptHost\BatchRvtScriptHost.csproj", "{673D1FB5-CFB2-4BDF-9609-C43979DD7197}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Batch.Shared.ScriptHost", "src\shared\Batch.Shared.ScriptHost\Batch.Shared.ScriptHost.csproj", "{673D1FB5-CFB2-4BDF-9609-C43979DD7197}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BatchRvtGUI", "src\apps\Batch.App.Gui\BatchRvtGUI.csproj", "{97687640-0B4D-4E2A-8B77-6EB2CF0F51EC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Batch.App.Gui", "src\apps\Batch.App.Gui\Batch.App.Gui.csproj", "{97687640-0B4D-4E2A-8B77-6EB2CF0F51EC}"
 	ProjectSection(ProjectDependencies) = postProject
 		{C877620C-DE32-455C-BF21-8F3E73E9DF68} = {C877620C-DE32-455C-BF21-8F3E73E9DF68}
 		{B880DD15-184B-4CE2-86FC-08BAC05E0271} = {B880DD15-184B-4CE2-86FC-08BAC05E0271}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BatchRvtUtil", "src\shared\Batch.Shared.Util\BatchRvtUtil.csproj", "{B880DD15-184B-4CE2-86FC-08BAC05E0271}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Batch.Shared.Util", "src\shared\Batch.Shared.Util\Batch.Shared.Util.csproj", "{B880DD15-184B-4CE2-86FC-08BAC05E0271}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BatchRevitDynamo", "src\integrations\Batch.Integration.Dynamo\BatchRevitDynamo.csproj", "{B2FED296-9EA0-41DD-BB2F-951D481F527B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Batch.Integration.Dynamo", "src\integrations\Batch.Integration.Dynamo\Batch.Integration.Dynamo.csproj", "{B2FED296-9EA0-41DD-BB2F-951D481F527B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{37C4B35E-EFC4-4DA0-A021-42DE0D98B525}"
 	ProjectSection(SolutionItems) = preProject
 		src\shared\Common\GlobalAssemblyInfo.cs = src\shared\Common\GlobalAssemblyInfo.cs
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BatchRvtAddin2024", "src\addins\Batch.AddIn.2024\BatchRvtAddin2024.csproj", "{237EB511-D77C-4142-80F3-C668CA8C83EC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Batch.AddIn.2024", "src\addins\Batch.AddIn.2024\Batch.AddIn.2024.csproj", "{237EB511-D77C-4142-80F3-C668CA8C83EC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BatchRvtUtil.Tests", "tests\Batch.Shared.Util.Tests\BatchRvtUtil.Tests.csproj", "{BFD3D072-42A4-4B86-B225-73139D6C95D9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Batch.Shared.Util.Tests", "tests\Batch.Shared.Util.Tests\Batch.Shared.Util.Tests.csproj", "{BFD3D072-42A4-4B86-B225-73139D6C95D9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{9507B984-1FEE-4C24-B8E6-F305588E26DD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BatchRvtAddin2025", "src\addins\Batch.AddIn.2025\BatchRvtAddin2025.csproj", "{F9C773C0-A288-4821-9DC0-E131745B3F39}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Batch.AddIn.2025", "src\addins\Batch.AddIn.2025\Batch.AddIn.2025.csproj", "{F9C773C0-A288-4821-9DC0-E131745B3F39}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BatchRvtAddin2026", "src\addins\Batch.AddIn.2026\BatchRvtAddin2026.csproj", "{8CBCE56A-F60F-BE0A-0BC5-9B05F49CF33B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Batch.AddIn.2026", "src\addins\Batch.AddIn.2026\Batch.AddIn.2026.csproj", "{8CBCE56A-F60F-BE0A-0BC5-9B05F49CF33B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BatchRvtAddin2027", "src\addins\Batch.AddIn.2027\BatchRvtAddin2027.csproj", "{A1D2E3F4-5B6C-7D8E-9F0A-B1C2D3E4F5A6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Batch.AddIn.2027", "src\addins\Batch.AddIn.2027\Batch.AddIn.2027.csproj", "{A1D2E3F4-5B6C-7D8E-9F0A-B1C2D3E4F5A6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

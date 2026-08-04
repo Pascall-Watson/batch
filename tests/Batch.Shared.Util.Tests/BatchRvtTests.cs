@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using BatchRvtUtil;
+using Batch.Shared.Util;
 using Xunit;
 
 
-namespace BatchRvtUtil.Tests
+namespace Batch.Shared.Util.Tests
 {
     public class BatchRvtTests
     {

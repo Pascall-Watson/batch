@@ -2,8 +2,8 @@
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
     <OutputType>Library</OutputType>
-    <RootNamespace>BatchRvtAddin2025</RootNamespace>
-    <AssemblyName>BatchRvtAddin2025</AssemblyName>
+    <RootNamespace>Batch.AddIn.Revit2025</RootNamespace>
+    <AssemblyName>Batch.AddIn.2025</AssemblyName>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
     <!-- Prevent runtimes folder creation -->
@@ -15,8 +15,8 @@
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <Copyright>Copyright © 2024</Copyright>
     <Company>BVN</Company>
-    <Product>BatchRvtAddin2025</Product>
-    <AssemblyTitle>BatchRvtAddin2025</AssemblyTitle>
+    <Product>Batch.AddIn.2025</Product>
+    <AssemblyTitle>Batch.AddIn.2025</AssemblyTitle>
     <AssemblyVersion>1.0.0</AssemblyVersion>
     <FileVersion>1.0.0</FileVersion>
     

@@ -1,4 +1,4 @@
-﻿//
+//
 // Revit Batch Processor
 //
 // Copyright (c) 2020  Daniel Rumery, BVN
@@ -22,7 +22,7 @@ using System;
 using System.ComponentModel;
 using System.Windows.Forms;
 
-namespace BatchRvtGUI;
+namespace Batch.App.Gui;
 
 public partial class RevitFileScanningProgressUI : Form
 {

@@ -22,7 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace BatchRvt.ScriptHost;
+namespace Batch.Shared.ScriptHost;
 
 public static class ScriptHostUtil
 {
