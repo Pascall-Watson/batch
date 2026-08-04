@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using BatchRvtUtil;
 using Xunit;
 
@@ -46,6 +47,57 @@ namespace BatchRvtUtil.Tests
         public void IsBatchRvtLine_ShouldReturnExceptionOnNullArgument(string line)
         {
             Assert.Throws<ArgumentException>(() => BatchRvt.IsBatchRvtLine(line));
+        }
+
+        [Theory]
+        [InlineData("2024")]
+        [InlineData("2025")]
+        [InlineData("2026")]
+        [InlineData("2027")]
+        public void IsSupportedRevitVersionNumber_ShouldReturnTrue_ForSupportedVersions(string revitVersionNumber)
+        {
+            Assert.True(RevitVersion.IsSupportedRevitVersionNumber(revitVersionNumber));
+        }
+
+        [Theory]
+        [InlineData("2023")]
+        [InlineData("2019")]
+        [InlineData("2028")]
+        [InlineData("foo")]
+        public void IsSupportedRevitVersionNumber_ShouldReturnFalse_ForUnsupportedVersions(string revitVersionNumber)
+        {
+            Assert.False(RevitVersion.IsSupportedRevitVersionNumber(revitVersionNumber));
+        }
+
+        [Theory]
+        [InlineData("2024", RevitVersion.SupportedRevitVersion.Revit2024)]
+        [InlineData("2025", RevitVersion.SupportedRevitVersion.Revit2025)]
+        [InlineData("2026", RevitVersion.SupportedRevitVersion.Revit2026)]
+        [InlineData("2027", RevitVersion.SupportedRevitVersion.Revit2027)]
+        public void GetSupportedRevitVersion_ShouldReturnExpectedEnum_ForSupportedVersions(
+            string revitVersionNumber,
+            RevitVersion.SupportedRevitVersion expectedVersion)
+        {
+            var actualVersion = RevitVersion.GetSupportedRevitVersion(revitVersionNumber);
+
+            Assert.Equal(expectedVersion, actualVersion);
+        }
+
+        [Fact]
+        public void SupportedRevitVersion_Enum_ShouldContainOnlyExpectedVersions()
+        {
+            var versionNames = Enum.GetNames(typeof(RevitVersion.SupportedRevitVersion));
+
+            Assert.Equal(4, versionNames.Length);
+            Assert.Equal(
+                new[]
+                {
+                    nameof(RevitVersion.SupportedRevitVersion.Revit2024),
+                    nameof(RevitVersion.SupportedRevitVersion.Revit2025),
+                    nameof(RevitVersion.SupportedRevitVersion.Revit2026),
+                    nameof(RevitVersion.SupportedRevitVersion.Revit2027)
+                },
+                versionNames.ToArray());
         }
     }
 }
