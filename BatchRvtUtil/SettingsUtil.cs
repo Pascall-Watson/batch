@@ -203,8 +203,20 @@ public class EnumSetting<T> : OptionalSetting<T>
         if (string.IsNullOrWhiteSpace(value))
             return default;
 
-        if (!Enum.TryParse<T>(value, true, out var enumValue))
-            throw new FormatException($"Enum setting value '{value}' is invalid for type '{typeof(T).Name}'.");
+        var trimmedValue = value.Trim();
+
+        // Preserve a specific error for legacy Revit year values that were removed from the enum.
+        if (typeof(T) == typeof(RevitVersion.SupportedRevitVersion) &&
+            trimmedValue.StartsWith("Revit", StringComparison.OrdinalIgnoreCase))
+        {
+            var yearText = trimmedValue.Substring("Revit".Length);
+            if (int.TryParse(yearText, out var year) && year < 2024)
+                throw new NotSupportedException(
+                    $"Revit version setting '{trimmedValue}' is no longer supported. Supported versions are Revit2024-Revit2027.");
+        }
+
+        if (!Enum.TryParse<T>(trimmedValue, true, out var enumValue))
+            throw new FormatException($"Enum setting value '{trimmedValue}' is invalid for type '{typeof(T).Name}'.");
 
         // Enforce the reduced supported version policy at settings load time.
         if (typeof(T) == typeof(RevitVersion.SupportedRevitVersion))

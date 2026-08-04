@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using BatchRvtUtil;
 using Xunit;
@@ -98,6 +99,76 @@ namespace BatchRvtUtil.Tests
                     nameof(RevitVersion.SupportedRevitVersion.Revit2027)
                 },
                 versionNames.ToArray());
+        }
+
+        [Fact]
+        public void LoadFromFile_ShouldRejectLegacyRevitVersionSetting()
+        {
+            var settingsFilePath = CreateTempSettingsFile(
+                "{\"singleRevitTaskRevitVersion\":\"Revit2023\"}");
+
+            try
+            {
+                var settings = new BatchRvtSettings();
+                var loaded = settings.LoadFromFile(settingsFilePath);
+
+                Assert.False(loaded);
+                Assert.IsType<NotSupportedException>(settings.LastLoadException);
+            }
+            finally
+            {
+                File.Delete(settingsFilePath);
+            }
+        }
+
+        [Fact]
+        public void LoadFromFile_ShouldRejectInvalidRevitVersionSetting()
+        {
+            var settingsFilePath = CreateTempSettingsFile(
+                "{\"singleRevitTaskRevitVersion\":\"NotARealVersion\"}");
+
+            try
+            {
+                var settings = new BatchRvtSettings();
+                var loaded = settings.LoadFromFile(settingsFilePath);
+
+                Assert.False(loaded);
+                Assert.IsType<FormatException>(settings.LastLoadException);
+            }
+            finally
+            {
+                File.Delete(settingsFilePath);
+            }
+        }
+
+        [Fact]
+        public void LoadFromFile_ShouldAcceptSupportedRevitVersionSetting()
+        {
+            var settingsFilePath = CreateTempSettingsFile(
+                "{\"singleRevitTaskRevitVersion\":\"Revit2024\"}");
+
+            try
+            {
+                var settings = new BatchRvtSettings();
+                var loaded = settings.LoadFromFile(settingsFilePath);
+
+                Assert.True(loaded);
+                Assert.Null(settings.LastLoadException);
+                Assert.Equal(
+                    RevitVersion.SupportedRevitVersion.Revit2024,
+                    settings.SingleRevitTaskRevitVersion.GetValue());
+            }
+            finally
+            {
+                File.Delete(settingsFilePath);
+            }
+        }
+
+        private static string CreateTempSettingsFile(string json)
+        {
+            var filePath = Path.GetTempFileName();
+            File.WriteAllText(filePath, json);
+            return filePath;
         }
     }
 }
