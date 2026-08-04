@@ -42,6 +42,6 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(EnableAddinDeployment)' == 'true'">
-    <Exec Command="call &quot;$(ProjectDir)..\AddinDeployment\DeployAddin.bat&quot; &quot;$(ProjectDir)&quot; &quot;$(TargetDir)&quot; &quot;2024&quot;" />
+    <Exec Command="call &quot;$(ProjectDir)..\..\..\deployment\revit-addin\DeployAddin.bat&quot; &quot;$(ProjectDir)&quot; &quot;$(TargetDir)&quot; &quot;2024&quot;" />
   </Target>
 </Project>

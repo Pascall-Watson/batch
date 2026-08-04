@@ -46,6 +46,6 @@
     <ProjectReference Include="..\..\shared\Batch.Shared.Util\Batch.Shared.Util.csproj" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(EnableAddinDeployment)' == 'true'">
-    <Exec Command="call &quot;$(ProjectDir)..\AddinDeployment\DeployAddin.bat&quot; &quot;$(ProjectDir)&quot; &quot;$(TargetDir)&quot; &quot;2026&quot;" />
+    <Exec Command="call &quot;$(ProjectDir)..\..\..\deployment\revit-addin\DeployAddin.bat&quot; &quot;$(ProjectDir)&quot; &quot;$(TargetDir)&quot; &quot;2026&quot;" />
   </Target>
 </Project>
