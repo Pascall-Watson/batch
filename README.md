@@ -67,10 +67,10 @@ This repository is the Pascall-Watson fork of [BVN Architecture's Revit Batch Pr
 | --- | --- | --- |
 | Primary language | C# | Legacy project files plus newer SDK-style project support for the Revit 2027 add-in. |
 | Desktop framework | Windows Forms | Used by the BatchRvtGUI application. |
-| Runtime target | .NET Framework 4.8 | Main GUI, CLI, utility, script host, and Revit 2024-2026 add-in projects. |
+| Runtime target | net48 + modern .NET (Windows) | Main GUI/CLI run on .NET Framework 4.8; Revit 2025-2026 add-ins target `net8.0-windows`; Revit 2027 add-in targets `net10.0-windows`; core utility/script host are multi-targeted (`net48;net10.0-windows`). |
 | Revit 2027 add-in | `net10.0-windows` | Uses `Nice3point.Revit.Api.RevitAPI` and `Nice3point.Revit.Api.RevitAPIUI` packages. |
 | Revit integration | Autodesk Revit API / RevitAPIUI | Per-version add-in projects for Revit 2024-2027. |
-| Script execution | IronPython 2.7.x | Runs Python task scripts with access to Revit API objects. |
+| Script execution | IronPython 2.7.12 + 3.4.2 | Revit 2024-2026 use the Scripts27 runtime (IronPython 2.7), while Revit 2027 uses Scripts34 (IronPython 3.4). |
 | Visual scripting | Dynamo 1.3+ | Runs Dynamo `.dyn` workspaces when Dynamo is installed for the target Revit version. |
 | Data input | `.txt`, `.xlsx` | Text files contain one model path per line; Excel files use the first column. |
 | Serialization | Newtonsoft.Json | Used for settings and data exchange. |
