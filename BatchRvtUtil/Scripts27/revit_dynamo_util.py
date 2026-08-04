@@ -180,18 +180,10 @@ def ExecuteDynamoScriptInternal(uiapp, dynamoScriptFilePath, showUI=False):
                     "The Dynamo script has attribute '" + DYNAMO_HAS_RUN_WITHOUT_CRASH_ATTRIBUTE + "' set to '" + str(hasRunWithoutCrash) + "'. " +
                     "It must be set to '" + DYNAMO_ATTRIBUTE_XML_VALUE_TRUE + "' in order for Dynamo script automation to work."
                 )
-    revitVersionNumber = uiapp.Application.VersionNumber
-    if revitVersionNumber == "2015":
-        raise Exception("Automation of Dynamo scripts is not supported in Revit 2015!")
-    elif revitVersionNumber == "2016":
-        JOURNAL_KEY__AUTOMATION_MODE = "dynAutomation"
-        JOURNAL_KEY__SHOW_UI = "dynShowUI"
-        JOURNAL_KEY__DYN_PATH = "dynPath"
-    else:
-        from Dynamo.Applications import JournalKeys
-        JOURNAL_KEY__AUTOMATION_MODE = JournalKeys.AutomationModeKey
-        JOURNAL_KEY__SHOW_UI = JournalKeys.ShowUiKey
-        JOURNAL_KEY__DYN_PATH = JournalKeys.DynPathKey
+    from Dynamo.Applications import JournalKeys
+    JOURNAL_KEY__AUTOMATION_MODE = JournalKeys.AutomationModeKey
+    JOURNAL_KEY__SHOW_UI = JournalKeys.ShowUiKey
+    JOURNAL_KEY__DYN_PATH = JournalKeys.DynPathKey
 
     dynamoRevitCommandData = DynamoRevitCommandData()
     dynamoRevitCommandData.Application = uiapp

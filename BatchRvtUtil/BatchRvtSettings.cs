@@ -77,6 +77,8 @@ public class BatchRvtSettings : IPersistent
     // UI settings
     public readonly BooleanSetting ShowAdvancedSettings = new("showAdvancedSettings");
 
+    public Exception LastLoadException { get; private set; }
+
     public readonly BooleanSetting ShowMessageBoxOnTaskScriptError = new("showMessageBoxOnTaskScriptError");
 
     public readonly BooleanSetting ShowRevitProcessErrorMessages = new("showRevitProcessErrorMessages");
@@ -137,7 +139,8 @@ public class BatchRvtSettings : IPersistent
 
     public bool LoadFromFile(string filePath = null)
     {
-        
+        LastLoadException = null;
+
         filePath = string.IsNullOrWhiteSpace(filePath) ? GetDefaultSettingsFilePath() : filePath;
 
         if (!File.Exists(filePath)) return false;
@@ -148,11 +151,12 @@ public class BatchRvtSettings : IPersistent
             Load(jobject);
             return true;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LastLoadException = ex;
             return false;
         }
-        
+
     }
 
     public bool SaveToFile(string filePath = null)

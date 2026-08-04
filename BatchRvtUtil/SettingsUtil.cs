@@ -102,7 +102,7 @@ public class OptionalSetting<T> : Setting<T>
         {
             value = deserialize(jobject, propertyName);
         }
-        catch (Exception)
+        catch (Exception ex) when (ex is not FormatException && ex is not NotSupportedException)
         {
             // ignored
         }
@@ -200,11 +200,35 @@ public class EnumSetting<T> : OptionalSetting<T>
 
     private static T StringToEnum(string value)
     {
-        var enumValue = default(T);
+        if (string.IsNullOrWhiteSpace(value))
+            return default;
 
-        if (!string.IsNullOrWhiteSpace(value))
+        var trimmedValue = value.Trim();
+
+        // Preserve a specific error for legacy Revit year values that were removed from the enum.
+        if (typeof(T) == typeof(RevitVersion.SupportedRevitVersion) &&
+            trimmedValue.StartsWith("Revit", StringComparison.OrdinalIgnoreCase))
         {
-            var isParsed = Enum.TryParse(value, true, out enumValue);
+            var yearText = trimmedValue.Substring("Revit".Length);
+            if (int.TryParse(yearText, out var year) && year < 2024)
+                throw new NotSupportedException(
+                    $"Revit version setting '{trimmedValue}' is no longer supported. Supported versions are Revit2024-Revit2027.");
+        }
+
+        if (!Enum.TryParse<T>(trimmedValue, true, out var enumValue))
+            throw new FormatException($"Enum setting value '{trimmedValue}' is invalid for type '{typeof(T).Name}'.");
+
+        if (!Enum.IsDefined(typeof(T), enumValue))
+            throw new FormatException(
+                $"Enum setting value '{trimmedValue}' is not a defined member of type '{typeof(T).Name}'.");
+
+        // Enforce the reduced supported version policy at settings load time.
+        if (typeof(T) == typeof(RevitVersion.SupportedRevitVersion))
+        {
+            var revitVersion = (RevitVersion.SupportedRevitVersion)(object)enumValue;
+            if (revitVersion < RevitVersion.SupportedRevitVersion.Revit2024)
+                throw new NotSupportedException(
+                    $"Revit version setting '{revitVersion}' is no longer supported. Supported versions are Revit2024-Revit2027.");
         }
 
         return enumValue;

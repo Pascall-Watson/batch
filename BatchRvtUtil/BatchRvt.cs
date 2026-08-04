@@ -55,19 +55,10 @@ public static class BatchRvt
         UseSameSessionForFilesOfSameVersion = 1
     }
 
-    // TODO VERSION UPDATE: Add new key, value for Revit version
+    // Keep this map aligned with RevitVersion.SupportedRevitVersion entries.
     private static readonly Dictionary<RevitVersion.SupportedRevitVersion, string> BATCHRVT_ADDIN_FILENAMES =
         new Dictionary<RevitVersion.SupportedRevitVersion, string>()
         {
-            { RevitVersion.SupportedRevitVersion.Revit2015, "BatchRvtAddin2015.addin" },
-            { RevitVersion.SupportedRevitVersion.Revit2016, "BatchRvtAddin2016.addin" },
-            { RevitVersion.SupportedRevitVersion.Revit2017, "BatchRvtAddin2017.addin" },
-            { RevitVersion.SupportedRevitVersion.Revit2018, "BatchRvtAddin2018.addin" },
-            { RevitVersion.SupportedRevitVersion.Revit2019, "BatchRvtAddin2019.addin" },
-            { RevitVersion.SupportedRevitVersion.Revit2020, "BatchRvtAddin2020.addin" },
-            { RevitVersion.SupportedRevitVersion.Revit2021, "BatchRvtAddin2021.addin" },
-            { RevitVersion.SupportedRevitVersion.Revit2022, "BatchRvtAddin2022.addin" },
-            { RevitVersion.SupportedRevitVersion.Revit2023, "BatchRvtAddin2023.addin" },
             { RevitVersion.SupportedRevitVersion.Revit2024, "BatchRvtAddin2024.addin" },
             { RevitVersion.SupportedRevitVersion.Revit2025, "BatchRvtAddin2025.addin" },
             { RevitVersion.SupportedRevitVersion.Revit2026, "BatchRvtAddin2026.addin" },
@@ -84,7 +75,7 @@ public static class BatchRvt
     }
 
     // Renamed from "Scripts" → "Scripts27" when IPy 3.4 support for Revit 2027 was added.
-    // Revit 2015–2026 addins still read from this folder (IronPython 2.7); the 2027 addin
+    // Revit 2024–2026 addins still read from this folder (IronPython 2.7); the 2027 addin
     // reads from "Scripts34" (IronPython 3.4) via its own per-addin C# constant.
     private const string SCRIPTS_FOLDER_NAME = "Scripts27";
 

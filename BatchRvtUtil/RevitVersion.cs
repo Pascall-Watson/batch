@@ -28,58 +28,31 @@ namespace BatchRvtUtil;
 
 public static class RevitVersion
 {
-    // TODO VERSION UPDATE: Add new enum for Revit version
+    // Extend this enum when adding future supported Revit versions.
     public enum SupportedRevitVersion
     {
-        Revit2015 = 0,
-        Revit2016 = 1,
-        Revit2017 = 2,
-        Revit2018 = 3,
-        Revit2019 = 4,
-        Revit2020 = 5,
-        Revit2021 = 6,
-        Revit2022 = 7,
-        Revit2023 = 8,
-        Revit2024 = 9,
-        Revit2025 = 10,
-        Revit2026 = 11,
-        Revit2027 = 12,
+        Revit2024 = 0,
+        Revit2025 = 1,
+        Revit2026 = 2,
+        Revit2027 = 3,
     }
 
     private const string REVIT_EXECUTABLE_FILE_NAME = "Revit.exe";
 
-    // TODO VERSION UPDATE: Add new key, value for Revit version
+    // Keep add-in folder mappings aligned with SupportedRevitVersion entries.
     private static readonly Dictionary<SupportedRevitVersion, string> REVIT_ADDINS_RELATIVE_PATHS =
         new Dictionary<SupportedRevitVersion, string>()
         {
-            { SupportedRevitVersion.Revit2015, @".\Autodesk\Revit\Addins\2015" },
-            { SupportedRevitVersion.Revit2016, @".\Autodesk\Revit\Addins\2016" },
-            { SupportedRevitVersion.Revit2017, @".\Autodesk\Revit\Addins\2017" },
-            { SupportedRevitVersion.Revit2018, @".\Autodesk\Revit\Addins\2018" },
-            { SupportedRevitVersion.Revit2019, @".\Autodesk\Revit\Addins\2019" },
-            { SupportedRevitVersion.Revit2020, @".\Autodesk\Revit\Addins\2020" },
-            { SupportedRevitVersion.Revit2021, @".\Autodesk\Revit\Addins\2021" },
-            { SupportedRevitVersion.Revit2022, @".\Autodesk\Revit\Addins\2022" },
-            { SupportedRevitVersion.Revit2023, @".\Autodesk\Revit\Addins\2023" },
             { SupportedRevitVersion.Revit2024, @".\Autodesk\Revit\Addins\2024" },
             { SupportedRevitVersion.Revit2025, @".\Autodesk\Revit\Addins\2025" },
             { SupportedRevitVersion.Revit2026, @".\Autodesk\Revit\Addins\2026" },
             { SupportedRevitVersion.Revit2027, @".\Autodesk\Revit\Addins\2027" },
         };
 
-    // TODO VERSION UPDATE: Add new key, value for Revit version
+    // Canonical version-number text used by config/CLI parsing and display.
     private static readonly Dictionary<SupportedRevitVersion, string> SUPPORTED_REVIT_VERSION_NUMBERS =
         new Dictionary<SupportedRevitVersion, string>()
         {
-            { SupportedRevitVersion.Revit2015, "2015" },
-            { SupportedRevitVersion.Revit2016, "2016" },
-            { SupportedRevitVersion.Revit2017, "2017" },
-            { SupportedRevitVersion.Revit2018, "2018" },
-            { SupportedRevitVersion.Revit2019, "2019" },
-            { SupportedRevitVersion.Revit2020, "2020" },
-            { SupportedRevitVersion.Revit2021, "2021" },
-            { SupportedRevitVersion.Revit2022, "2022" },
-            { SupportedRevitVersion.Revit2023, "2023" },
             { SupportedRevitVersion.Revit2024, "2024" },
             { SupportedRevitVersion.Revit2025, "2025" },
             { SupportedRevitVersion.Revit2026, "2026" },
@@ -121,19 +94,10 @@ public static class RevitVersion
         return $"BatchRvtAddin{GetVersionNumber(supportedRevitVersion)}.addin";
     }
 
-    // TODO VERSION UPDATE: Add new key, value for Revit version
+    // Keep local working-folder mappings aligned with SupportedRevitVersion entries.
     private static readonly Dictionary<SupportedRevitVersion, string> REVIT_LOCAL_FOLDER_PATHS =
         new Dictionary<SupportedRevitVersion, string>()
         {
-            { SupportedRevitVersion.Revit2015, @"C:\REVIT_LOCAL2015" },
-            { SupportedRevitVersion.Revit2016, @"C:\REVIT_LOCAL2016" },
-            { SupportedRevitVersion.Revit2017, @"C:\REVIT_LOCAL2017" },
-            { SupportedRevitVersion.Revit2018, @"C:\REVIT_LOCAL2018" },
-            { SupportedRevitVersion.Revit2019, @"C:\REVIT_LOCAL2019" },
-            { SupportedRevitVersion.Revit2020, @"C:\REVIT_LOCAL2020" },
-            { SupportedRevitVersion.Revit2021, @"C:\REVIT_LOCAL2021" },
-            { SupportedRevitVersion.Revit2022, @"C:\REVIT_LOCAL2022" },
-            { SupportedRevitVersion.Revit2023, @"C:\REVIT_LOCAL2023" },
             { SupportedRevitVersion.Revit2024, @"C:\REVIT_LOCAL2024" },
             { SupportedRevitVersion.Revit2025, @"C:\REVIT_LOCAL2025" },
             { SupportedRevitVersion.Revit2026, @"C:\REVIT_LOCAL2026" },

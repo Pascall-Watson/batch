@@ -6,13 +6,13 @@
 [![Language](https://img.shields.io/github/languages/top/Pascall-Watson/batch)](https://github.com/Pascall-Watson/batch/search?l=c%23)
 [![Downloads](https://img.shields.io/github/downloads/Pascall-Watson/batch/total)](https://github.com/Pascall-Watson/batch/releases)
 [![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)](#getting-started)
-[![Revit](https://img.shields.io/badge/Revit-2015--2027-0696D7)](#tech-stack)
+[![Revit](https://img.shields.io/badge/Revit-2024--2027-0696D7)](#tech-stack)
 
 Pascall-Watson fork of Revit Batch Processor for large-scale Revit automation with custom Python or Dynamo task scripts.
 
 This repository is the Pascall-Watson fork of [BVN Architecture's Revit Batch Processor](https://github.com/bvn-architecture/RevitBatchProcessor), originally authored by Daniel Rumery. Revit Batch Processor helps BIM, computational design, and Revit API teams run repeatable automation across many `.rvt` and `.rfa` files without manually opening each model. Use the Windows GUI for interactive setup, or run the command-line tool from scheduled jobs and build pipelines. This fork preserves RBP's practical batch orchestration model: version-aware Revit launching, central-file options, per-version add-ins, script templates, logging, and unattended processing.
 
-> Fork repository: [Pascall-Watson/batch](https://github.com/Pascall-Watson/batch). Upstream repository: [bvn-architecture/RevitBatchProcessor](https://github.com/bvn-architecture/RevitBatchProcessor). The shared codebase currently reports `v2.1.1.0` beta, and source in this fork includes add-in projects for Revit 2015 through 2027.
+> Fork repository: [Pascall-Watson/batch](https://github.com/Pascall-Watson/batch). Upstream repository: [bvn-architecture/RevitBatchProcessor](https://github.com/bvn-architecture/RevitBatchProcessor). The shared codebase currently reports `v2.1.1.0` beta, and source in this fork includes add-in projects for Revit 2024 through 2027.
 
 <a id="table-of-contents"></a>
 ## Table of Contents
@@ -67,10 +67,10 @@ This repository is the Pascall-Watson fork of [BVN Architecture's Revit Batch Pr
 | --- | --- | --- |
 | Primary language | C# | Legacy project files plus newer SDK-style project support for the Revit 2027 add-in. |
 | Desktop framework | Windows Forms | Used by the BatchRvtGUI application. |
-| Runtime target | .NET Framework 4.8 | Main GUI, CLI, utility, script host, and Revit 2015-2026 add-in projects. |
+| Runtime target | net48 + modern .NET (Windows) | Main GUI/CLI run on .NET Framework 4.8; Revit 2025-2026 add-ins target `net8.0-windows`; Revit 2027 add-in targets `net10.0-windows`; core utility/script host are multi-targeted (`net48;net10.0-windows`). |
 | Revit 2027 add-in | `net10.0-windows` | Uses `Nice3point.Revit.Api.RevitAPI` and `Nice3point.Revit.Api.RevitAPIUI` packages. |
-| Revit integration | Autodesk Revit API / RevitAPIUI | Per-version add-in projects for Revit 2015-2027. |
-| Script execution | IronPython 2.7.x | Runs Python task scripts with access to Revit API objects. |
+| Revit integration | Autodesk Revit API / RevitAPIUI | Per-version add-in projects for Revit 2024-2027. |
+| Script execution | IronPython 2.7.12 + 3.4.2 | Revit 2024-2026 use the Scripts27 runtime (IronPython 2.7), while Revit 2027 uses Scripts34 (IronPython 3.4). |
 | Visual scripting | Dynamo 1.3+ | Runs Dynamo `.dyn` workspaces when Dynamo is installed for the target Revit version. |
 | Data input | `.txt`, `.xlsx` | Text files contain one model path per line; Excel files use the first column. |
 | Serialization | Newtonsoft.Json | Used for settings and data exchange. |
@@ -85,11 +85,11 @@ This repository is the Pascall-Watson fork of [BVN Architecture's Revit Batch Pr
 ### Prerequisites
 
 - Windows with access to a supported Autodesk Revit installation.
-- Visual Studio 2017 or later with the .NET desktop development workload.
+- Visual Studio 2022 or later with the .NET desktop development workload.
 - .NET Framework 4.8 Developer Pack for the main solution projects.
 - MSBuild available from a Visual Studio Developer PowerShell or Developer Command Prompt.
 - NuGet CLI or Visual Studio package restore.
-- Revit API references for the Revit versions you build locally. Legacy add-in projects reference assemblies under `References/Revit/<year>/`.
+- Revit API references for the Revit versions you build locally. Supported add-in projects (2024-2027) restore Revit API assemblies from NuGet packages.
 - Dynamo 1.3 or later if you want to run Dynamo task scripts.
 - Microsoft Office / Excel if you want to use `.xlsx` model lists.
 - Inno Setup 5 or 6 if you want to build the Windows installer.
@@ -105,10 +105,10 @@ Install from this fork's packaged releases when an installer is available:
 Start-Process "https://github.com/Pascall-Watson/batch/releases"
 ```
 
-The original BVN `v2.1.1.0` beta installer remains available from the upstream project for comparison or legacy installation testing:
+The original BVN `v2.0.0` beta installer remains available from the upstream project for comparison or legacy installation testing:
 
 ```powershell
-Start-Process "https://github.com/bvn-architecture/RevitBatchProcessor/releases/download/v2.1.1.0/RevitBatchProcessorSetup_v2.1.1.0.exe"
+Start-Process "https://github.com/bvn-architecture/RevitBatchProcessor/releases/download/v2.0.0/RevitBatchProcessorSetup_v2.0.0.exe"
 ```
 
 Build from source when you want to develop, debug, or package the project yourself:
@@ -154,8 +154,8 @@ P:\16\ProjectXYZ\ConsultantModel.rvt
 For BIM 360 / cloud-hosted models, use the Revit version, project GUID, and model GUID separated by spaces:
 
 ```text
-2020 75b6464c-ba0f-4529-b049-0de9e473c2d6 0d54b8cc-3837-4df2-8c8e-0a94f4828868
-2020 c0dc2fda-fd34-42fe-8bb7-bd9f43841dbf d9f011d6-d52c-4c9f-9d7b-eb8388bd3ed0
+2024 75b6464c-ba0f-4529-b049-0de9e473c2d6 0d54b8cc-3837-4df2-8c8e-0a94f4828868
+2024 c0dc2fda-fd34-42fe-8bb7-bd9f43841dbf d9f011d6-d52c-4c9f-9d7b-eb8388bd3ed0
 ```
 
 <!-- TODO: Add a checked-in sample BatchRvt.Settings.json once the supported settings schema is documented. -->
@@ -179,6 +179,12 @@ Build a release configuration:
 
 ```powershell
 msbuild .\RevitBatchProcessor.sln /p:Configuration=Release /p:Platform=x64
+```
+
+Skip local add-in deployment during build verification (deployment is still enabled by default):
+
+```powershell
+msbuild .\RevitBatchProcessor.sln /p:Configuration=Release /p:Platform=x64 /p:EnableAddinDeployment=false
 ```
 
 Run the command-line processor with an exported settings file:
@@ -313,8 +319,8 @@ See this fork's [docs](docs/) and the upstream [Revit Batch Processor FAQ](https
 |-- AddinDeployment/          # Batch files that copy/remove Revit add-in files.
 |-- BatchRevitDynamo/         # Dynamo execution integration.
 |-- BatchRvt/                 # Command-line batch processor executable.
-|-- BatchRvtAddin2015/        # Revit 2015 add-in project.
-|-- BatchRvtAddin20xx/        # Additional per-version Revit add-in projects through 2027.
+|-- BatchRvtAddin2024/        # Revit 2024 add-in project.
+|-- BatchRvtAddin20xx/        # Additional per-version Revit add-in projects for 2025-2027.
 |-- BatchRvtGUI/              # Windows Forms GUI application.
 |-- BatchRvtScriptHost/       # Script host invoked by Revit add-ins.
 |-- BatchRvtUtil/             # Shared utilities, script templates, and Revit orchestration code.
@@ -334,7 +340,7 @@ See this fork's [docs](docs/) and the upstream [Revit Batch Processor FAQ](https
 <a id="roadmap"></a>
 ## Roadmap
 
-- [x] Revit 2015-2026 add-in support.
+- [x] Revit 2024-2027 add-in support.
 - [x] GUI-driven batch setup and settings export.
 - [x] Command-line processing for scheduled and unattended runs.
 - [x] Python and Dynamo task script execution.
@@ -447,7 +453,7 @@ If Visual Studio still reports missing package imports, delete stale `bin/` and 
 <details>
 <summary>Build fails because Revit API references are missing.</summary>
 
-Legacy add-in projects reference local assemblies under `References/Revit/<year>/`. Install the matching Revit version or provide the required `RevitAPI.dll` and `RevitAPIUI.dll` reference assemblies for the years you want to build.
+Supported add-in projects for Revit 2024-2027 restore API references via NuGet package dependencies. Ensure package restore succeeds before building.
 </details>
 
 <details>

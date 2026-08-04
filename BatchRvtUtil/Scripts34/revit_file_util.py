@@ -102,21 +102,6 @@ def ToGuid(guidOrGuidText):
     return System.Guid(guidOrGuidText) if not isinstance(guidOrGuidText, System.Guid) else guidOrGuidText
 
 
-def _get_revit_version_number(application):
-    try:
-        return int(application.VersionNumber)
-    except Exception:
-        return None
-
-
-def _should_try_legacy_cloud_path_fallback(revitVersionNumber):
-    return revitVersionNumber is None or revitVersionNumber <= 2021
-
-
-def ToCloudPath(cloudProjectId, cloudModelId):
-    return ModelPathUtils.ConvertCloudGUIDsToCloudPath(ToGuid(cloudProjectId), ToGuid(cloudModelId))
-
-
 def _append_unique_region_candidate(candidates, candidate):
     if candidate is None:
         return
@@ -126,7 +111,7 @@ def _append_unique_region_candidate(candidates, candidate):
     candidates.append(candidate)
 
 
-def ToCloudPath2021(cloudProjectId, cloudModelId, revitVersionNumber=None):
+def ToCloudPath2021(cloudProjectId, cloudModelId):
     cloudProjectGuid = ToGuid(cloudProjectId)
     cloudModelGuid = ToGuid(cloudModelId)
 
@@ -146,19 +131,10 @@ def ToCloudPath2021(cloudProjectId, cloudModelId, revitVersionNumber=None):
     for regionValue in regionCandidates:
         try:
             return ModelPathUtils.ConvertCloudGUIDsToCloudPath(regionValue, cloudProjectGuid, cloudModelGuid)
-        except TypeError:
-            # Older Revit hosts only expose the 2-argument overload.
-            break
         except Exception:
             continue
 
-    if not _should_try_legacy_cloud_path_fallback(revitVersionNumber):
-        return cloud_region_util.get_unrecognised_region_msg()
-
-    try:
-        return ToCloudPath(cloudProjectGuid, cloudModelGuid)
-    except Exception:
-        return cloud_region_util.get_unrecognised_region_msg()
+    return cloud_region_util.get_unrecognised_region_msg()
 
 
 def OpenNewLocal(application, modelPath, localModelPath, closeAllWorksets=False, worksetConfig=None, audit=False):
@@ -210,7 +186,7 @@ def OpenAndActivateDetachAndPreserveWorksets(uiApplication, modelPath, closeAllW
 
 
 def OpenCloudDocument(application, cloudProjectId, cloudModelId, closeAllWorksets=False, worksetConfig=None, audit=False):
-    cloudPath = ToCloudPath2021(cloudProjectId, cloudModelId, _get_revit_version_number(application))
+    cloudPath = ToCloudPath2021(cloudProjectId, cloudModelId)
     openOptions = OpenOptions()
     openOptions.SetOpenWorksetsConfiguration(ParseWorksetConfigurationOption(closeAllWorksets, worksetConfig))
     if audit:
@@ -221,7 +197,7 @@ def OpenCloudDocument(application, cloudProjectId, cloudModelId, closeAllWorkset
 
 
 def OpenAndActivateCloudDocument(uiApplication, cloudProjectId, cloudModelId, closeAllWorksets=False, worksetConfig=None, audit=False):
-    cloudPath = ToCloudPath2021(cloudProjectId, cloudModelId, _get_revit_version_number(uiApplication.Application))
+    cloudPath = ToCloudPath2021(cloudProjectId, cloudModelId)
     openOptions = OpenOptions()
     openOptions.SetOpenWorksetsConfiguration(ParseWorksetConfigurationOption(closeAllWorksets, worksetConfig))
     if audit:
@@ -344,10 +320,10 @@ def TryGetBasicFileInfo(revitFilePath):
 
 def GetSavedInVersion(basicFileInfo):
     try:
-        # <= Revit 2019
+        # Legacy API property name.
         return basicFileInfo.SavedInVersion
     except System.MissingMemberException:
-        # Revit 2020+
+        # Newer API property name.
         return basicFileInfo.Format
 
 

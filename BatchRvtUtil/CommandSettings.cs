@@ -143,7 +143,11 @@ public static class CommandSettings
 
         if (string.IsNullOrWhiteSpace(revitVersionOptionValue)) return null;
         if (RevitVersion.IsSupportedRevitVersionNumber(revitVersionOptionValue))
+        {
             revitVersion = RevitVersion.GetSupportedRevitVersion(revitVersionOptionValue);
+            if (revitVersion < RevitVersion.SupportedRevitVersion.Revit2024)
+                revitVersion = null;
+        }
 
         return revitVersion;
     }

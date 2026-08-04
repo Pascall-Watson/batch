@@ -20,6 +20,7 @@
 
 import clr
 import System
+import re
 clr.AddReference("System.Core")
 clr.ImportExtensions(System.Linq)
 
@@ -27,6 +28,7 @@ from System.IO import Path
 
 import path_util
 import revit_file_list
+import revit_file_version
 import batch_rvt_monitor_util
 import snapshot_data_util
 import session_data_util
@@ -52,10 +54,47 @@ def HasSupportedRevitVersion(supportedRevitFileInfo):
 def GetRevitFileSize(supportedRevitFileInfo):
     return supportedRevitFileInfo.GetRevitFileInfo().GetFileSize()
 
+def IsLegacyRevitVersion(revitVersion):
+    return (
+            revitVersion is not None
+            and
+            revitVersion < RevitVersion.SupportedRevitVersion.Revit2024
+        )
+
+def IsLegacyRevitVersionText(revitVersionText):
+    isLegacyRevitVersionText = False
+
+    if str.IsNullOrWhiteSpace(revitVersionText):
+        return False
+
+    revitVersionNumberText = revit_file_version.GetRevitVersionNumberTextFromRevitVersionText(revitVersionText)
+
+    if not str.IsNullOrWhiteSpace(revitVersionNumberText):
+        try:
+            isLegacyRevitVersionText = int(revitVersionNumberText) < 2024
+        except Exception, e:
+            pass
+
+    # Legacy files may no longer map to an explicit prefix, so also inspect the raw version text.
+    if not isLegacyRevitVersionText:
+        yearMatch = re.search(r'\b(20\d{2})\b', revitVersionText)
+        if yearMatch is not None:
+            try:
+                isLegacyRevitVersionText = int(yearMatch.group(1)) < 2024
+            except Exception, e:
+                pass
+
+    return isLegacyRevitVersionText
+
 def HasAllowedRevitVersion(batchRvtConfig, supportedRevitFileInfo):
+    revitVersion = supportedRevitFileInfo.TryGetRevitVersionNumber()
+    revitVersionText = supportedRevitFileInfo.TryGetRevitVersionText()
+
+    if IsLegacyRevitVersion(revitVersion) or IsLegacyRevitVersionText(revitVersionText):
+        return False
+
     hasAllowedRevitVersion = False
     if (batchRvtConfig.RevitFileProcessingOption == BatchRvt.RevitFileProcessingOption.UseSpecificRevitVersion):
-        revitVersion = supportedRevitFileInfo.TryGetRevitVersionNumber()
         if revitVersion is None or revitVersion <= batchRvtConfig.BatchRevitTaskRevitVersion:
             hasAllowedRevitVersion = True
     elif HasSupportedRevitVersion(supportedRevitFileInfo):

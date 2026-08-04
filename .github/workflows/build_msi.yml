@@ -17,6 +17,11 @@ jobs:
       - name: Setup MSBuild path
         uses: microsoft/setup-msbuild@v2     
 
+      - name: Setup .NET SDK from global.json
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
       - name: Restore NuGet packages
         run: |
           nuget restore "RevitBatchProcessor.sln"
@@ -66,7 +71,11 @@ jobs:
 
       - name: Build solution
         run: |
-            msbuild "RevitBatchProcessor.sln" /p:Configuration=Release /p:Platform="x64" /m
+            msbuild "RevitBatchProcessor.sln" /p:Configuration=Release /p:Platform="x64" /p:EnableAddinDeployment=false /m
+
+      - name: Run unit tests
+        run: |
+            dotnet test "BatchRvtUtil.Tests/BatchRvtUtil.Tests.csproj" --configuration Release --no-build -p:EnableAddinDeployment=false -v minimal
 
       - name: Verify installer sources exist
         shell: pwsh
@@ -87,8 +96,8 @@ jobs:
             $guiOut = "BatchRvtGUI/bin/x64/Release"
             $res = Test-DirWithFiles $guiOut; if ($res) { $missing += $res }
 
-            # 3. Addin years 2015-2027 (directories + .addin files)
-            foreach ($year in 2015..2027) {
+            # 3. Addin years 2024-2027 (directories + .addin files)
+            foreach ($year in 2024..2027) {
               $addinDir = "BatchRvtAddin$year/bin/x64/Release"
               $res = Test-DirWithFiles $addinDir; if ($res) { $missing += $res }
               $addinFile = "BatchRvtAddin$year/BatchRvtAddin$year.addin"
@@ -100,6 +109,7 @@ jobs:
             } else {
               Write-Host "The following required sources were NOT found:" 
               $missing | ForEach-Object { Write-Host $_ }
+              exit 1
             }
 
       - name: Create installer file
