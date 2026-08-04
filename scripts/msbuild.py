@@ -125,7 +125,7 @@ print "Starting..."
 if configuration not in EXPECTED_CONFIGS:
   raise Exception("Unexpected configuration specified: '" + configuration + "'")
 
-VC_FOLDER_PATH = VC_FOLDER_PATHS.Where(lambda p: Directory.Exists(p)).LastOrDefault()
+VC_FOLDER_PATH = VC_FOLDER_PATHS.Where(lambda p: Directory.Exists(p)).FirstOrDefault()
 
 if VC_FOLDER_PATH is None:
   raise Exception("Could not locate MSBuild toolset (for vcvarsall.bat, etc.). Checked: " + ", ".join(VC_FOLDER_PATHS))
