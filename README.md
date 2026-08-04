@@ -66,7 +66,7 @@ This repository is the Pascall-Watson fork of [BVN Architecture's Revit Batch Pr
 | Area | Technology | Notes |
 | --- | --- | --- |
 | Primary language | C# | Legacy project files plus newer SDK-style project support for the Revit 2027 add-in. |
-| Desktop framework | Windows Forms | Used by the BatchRvtGUI application. |
+| Desktop framework | Windows Forms | Used by the Batch.App.Gui application. |
 | Runtime target | net48 + modern .NET (Windows) | Main GUI/CLI run on .NET Framework 4.8; Revit 2025-2026 add-ins target `net8.0-windows`; Revit 2027 add-in targets `net10.0-windows`; core utility/script host are multi-targeted (`net48;net10.0-windows`). |
 | Revit 2027 add-in | `net10.0-windows` | Uses `Nice3point.Revit.Api.RevitAPI` and `Nice3point.Revit.Api.RevitAPIUI` packages. |
 | Revit integration | Autodesk Revit API / RevitAPIUI | Per-version add-in projects for Revit 2024-2027. |
@@ -74,9 +74,9 @@ This repository is the Pascall-Watson fork of [BVN Architecture's Revit Batch Pr
 | Visual scripting | Dynamo 1.3+ | Runs Dynamo `.dyn` workspaces when Dynamo is installed for the target Revit version. |
 | Data input | `.txt`, `.xlsx` | Text files contain one model path per line; Excel files use the first column. |
 | Serialization | Newtonsoft.Json | Used for settings and data exchange. |
-| Testing | xUnit 2.x | `BatchRvtUtil.Tests` contains unit tests for utility behavior. |
+| Testing | xUnit 2.x | `Batch.Shared.Util.Tests` contains unit tests for utility behavior. |
 | Test helpers | FluentAssertions, Moq, Castle.Core | Used across test and project references. |
-| Installer | Inno Setup 5 or 6 | Setup scripts live in `Setup/`. |
+| Installer | Inno Setup 5 or 6 | Installer scripts live in `installer/inno/`. |
 
 <a id="getting-started"></a>
 ## Getting Started
@@ -116,14 +116,14 @@ Build from source when you want to develop, debug, or package the project yourse
 ```powershell
 git clone https://github.com/Pascall-Watson/batch.git
 cd batch
-nuget restore .\RevitBatchProcessor.sln
-msbuild .\RevitBatchProcessor.sln /p:Configuration=Debug /p:Platform=x64
+nuget restore .\Batch.sln
+msbuild .\Batch.sln /p:Configuration=Debug /p:Platform=x64
 ```
 
-You can also use the repository build script from the `scripts/` folder:
+After building, you can start the GUI directly from the output folder:
 
 ```powershell
-.\scripts\build_BatchRvtGUI.Debug.bat
+.\src\apps\Batch.App.Gui\bin\x64\Debug\Batch.App.Gui.exe
 ```
 
 During a successful build, per-version add-in projects deploy their add-in files to the matching Revit add-ins folder, for example `%APPDATA%\Autodesk\Revit\Addins\2025\BatchRvt\`.
@@ -163,34 +163,34 @@ For BIM 360 / cloud-hosted models, use the Revit version, project GUID, and mode
 <a id="running-the-project"></a>
 ### Running the Project
 
-Start the debug GUI build:
+Start the debug GUI executable:
 
 ```powershell
-.\scripts\start_BatchRvtGUI.Debug.bat
+.\src\apps\Batch.App.Gui\bin\x64\Debug\Batch.App.Gui.exe
 ```
 
 Show CLI help after building:
 
 ```powershell
-.\BatchRvt\bin\x64\Debug\BatchRvt.exe --help
+.\src\apps\Batch.App.Cli\bin\x64\Debug\Batch.App.Cli.exe --help
 ```
 
 Build a release configuration:
 
 ```powershell
-msbuild .\RevitBatchProcessor.sln /p:Configuration=Release /p:Platform=x64
+msbuild .\Batch.sln /p:Configuration=Release /p:Platform=x64
 ```
 
 Skip local add-in deployment during build verification (deployment is still enabled by default):
 
 ```powershell
-msbuild .\RevitBatchProcessor.sln /p:Configuration=Release /p:Platform=x64 /p:EnableAddinDeployment=false
+msbuild .\Batch.sln /p:Configuration=Release /p:Platform=x64 /p:EnableAddinDeployment=false
 ```
 
 Run the command-line processor with an exported settings file:
 
 ```powershell
-.\BatchRvt\bin\x64\Release\BatchRvt.exe --settings_file "C:\BatchTasks\BatchRvt.Settings.json" --log_folder "C:\BatchTasks\Logs"
+.\src\apps\Batch.App.Cli\bin\x64\Release\Batch.App.Cli.exe --settings_file "C:\BatchTasks\BatchRvt.Settings.json" --log_folder "C:\BatchTasks\Logs"
 ```
 
 <a id="usage"></a>
@@ -223,7 +223,7 @@ Output("Model title: " + doc.Title)
 Run it against a text file list in detach mode:
 
 ```powershell
-.\BatchRvt\bin\x64\Release\BatchRvt.exe `
+.\src\apps\Batch.App.Cli\bin\x64\Release\Batch.App.Cli.exe `
   --task_script "C:\BatchTasks\ReportModelInfo.py" `
   --file_list "C:\BatchTasks\RevitFileList.txt" `
   --revit_version 2025 `
@@ -236,7 +236,7 @@ Run it against a text file list in detach mode:
 Save the Dynamo workspace with Run mode set to `Automatic`, then pass the `.dyn` file as the task script:
 
 ```powershell
-.\BatchRvt\bin\x64\Release\BatchRvt.exe `
+.\src\apps\Batch.App.Cli\bin\x64\Release\Batch.App.Cli.exe `
   --task_script "C:\BatchTasks\AuditViews.dyn" `
   --file_list "C:\BatchTasks\RevitFileList.xlsx" `
   --revit_version 2024 `
@@ -250,11 +250,11 @@ Dynamo tasks always use a separate Revit session for each Revit file because Dyn
 Export settings from the GUI, then call the CLI from Windows Task Scheduler or another automation tool:
 
 ```powershell
-$BatchRvt = "$env:LOCALAPPDATA\RevitBatchProcessor\BatchRvt.exe"
+$BatchCli = "$env:LOCALAPPDATA\RevitBatchProcessor\Batch.App.Cli.exe"
 $Settings = "C:\BatchTasks\NightlyAudit\BatchRvt.Settings.json"
 $Logs = "C:\BatchTasks\NightlyAudit\Logs"
 
-& $BatchRvt --settings_file $Settings --log_folder $Logs
+& $BatchCli --settings_file $Settings --log_folder $Logs
 ```
 
 This pattern is useful for nightly health checks, batch upgrades, data extraction, or regression testing your own Revit API add-ins against a model library.
@@ -280,8 +280,8 @@ RBP exposes a command-line interface rather than an HTTP API.
 ### Command-line syntax
 
 ```powershell
-BatchRvt.exe --settings_file <SETTINGS_FILE_PATH> [--log_folder <LOG_FOLDER_PATH>]
-BatchRvt.exe --file_list <REVIT_FILE_LIST_PATH> --task_script <TASK_SCRIPT_FILE_PATH> [options]
+Batch.App.Cli.exe --settings_file <SETTINGS_FILE_PATH> [--log_folder <LOG_FOLDER_PATH>]
+Batch.App.Cli.exe --file_list <REVIT_FILE_LIST_PATH> --task_script <TASK_SCRIPT_FILE_PATH> [options]
 ```
 
 ### CLI options
@@ -316,23 +316,23 @@ See this fork's [docs](docs/) and the upstream [Revit Batch Processor FAQ](https
 
 ```text
 .
-|-- AddinDeployment/          # Batch files that copy/remove Revit add-in files.
-|-- BatchRevitDynamo/         # Dynamo execution integration.
-|-- BatchRvt/                 # Command-line batch processor executable.
-|-- BatchRvtAddin2024/        # Revit 2024 add-in project.
-|-- BatchRvtAddin20xx/        # Additional per-version Revit add-in projects for 2025-2027.
-|-- BatchRvtGUI/              # Windows Forms GUI application.
-|-- BatchRvtScriptHost/       # Script host invoked by Revit add-ins.
-|-- BatchRvtUtil/             # Shared utilities, script templates, and Revit orchestration code.
-|-- BatchRvtUtil.Tests/       # xUnit tests for utility code.
-|-- Common/                   # Shared assembly metadata.
-|-- References/               # Local third-party and Revit API reference assemblies.
-|-- Setup/                    # Inno Setup installer scripts.
-|-- docs/                     # Additional project documentation.
+|-- .github/                  # GitHub workflows and project automation.
+|-- deployment/               # Add-in deployment scripts.
+|   `-- revit-addin/
+|-- installer/                # Inno Setup installer scripts.
+|   `-- inno/
+|-- src/
+|   |-- addins/               # Revit add-in projects for 2024-2027.
+|   |-- apps/                 # CLI and GUI applications.
+|   |-- integrations/         # Dynamo integration project.
+|   `-- shared/               # Shared libraries and common assembly metadata.
+|-- tests/
+|   `-- Batch.Shared.Util.Tests/
+|-- third_party/              # Local third-party reference assemblies.
 |-- packages/                 # NuGet package restore output for legacy projects.
-|-- scripts/                  # Build, clean, start, and MSBuild helper scripts.
+|-- scripts/                  # MSBuild helper script(s).
 |-- Directory.Build.targets   # Shared MSBuild settings.
-|-- RevitBatchProcessor.sln   # Main Visual Studio solution.
+|-- Batch.sln                 # Main Visual Studio solution.
 |-- LICENSE.txt               # GNU GPL v3 license text.
 `-- README.md                 # Project overview and contributor guide.
 ```
@@ -371,15 +371,15 @@ Recommended workflow:
 
 ```powershell
 git checkout -b fix/describe-the-problem
-nuget restore .\RevitBatchProcessor.sln
-msbuild .\RevitBatchProcessor.sln /p:Configuration=Debug /p:Platform=x64
+nuget restore .\Batch.sln
+msbuild .\Batch.sln /p:Configuration=Debug /p:Platform=x64
 ```
 
 Coding and review expectations:
 
 - Keep changes scoped to one behavior or Revit-version update at a time.
 - Preserve existing project structure and per-version add-in patterns.
-- Update `BatchRvtUtil/RevitVersion.cs`, add-in projects, installer scripts, and documentation together when adding a new Revit year.
+- Update `src/shared/Batch.Shared.Util/RevitVersion.cs`, add-in projects, installer scripts, and documentation together when adding a new Revit year.
 - Prefer clear, imperative commit messages such as `Fix cloud model file-list parsing`.
 - Include manual Revit validation notes when the behavior cannot be covered by unit tests.
 - Look for issues labeled `good first issue`, `help wanted`, or similar newcomer-friendly labels.
@@ -392,26 +392,26 @@ Coding and review expectations:
 Restore dependencies and build the test project:
 
 ```powershell
-nuget restore .\RevitBatchProcessor.sln
-msbuild .\BatchRvtUtil.Tests\BatchRvtUtil.Tests.csproj /p:Configuration=Debug /p:Platform=AnyCPU
+nuget restore .\Batch.sln
+msbuild .\tests\Batch.Shared.Util.Tests\Batch.Shared.Util.Tests.csproj /p:Configuration=Debug /p:Platform=AnyCPU
 ```
 
 Run unit tests with Visual Studio Test Explorer, or from a Developer PowerShell with `vstest.console.exe` available:
 
 ```powershell
-vstest.console.exe .\BatchRvtUtil.Tests\bin\Debug\BatchRvtUtil.Tests.dll
+vstest.console.exe .\tests\Batch.Shared.Util.Tests\bin\Debug\Batch.Shared.Util.Tests.dll
 ```
 
 Run a solution build as the main regression check:
 
 ```powershell
-msbuild .\RevitBatchProcessor.sln /p:Configuration=Debug /p:Platform=x64
+msbuild .\Batch.sln /p:Configuration=Debug /p:Platform=x64
 ```
 
 Run code analysis with the repository ruleset when available in your Visual Studio installation:
 
 ```powershell
-msbuild .\RevitBatchProcessor.sln /p:Configuration=Debug /p:Platform=x64 /p:RunCodeAnalysis=true
+msbuild .\Batch.sln /p:Configuration=Debug /p:Platform=x64 /p:RunCodeAnalysis=true
 ```
 
 Most Revit integration behavior requires manual validation because it depends on installed Revit versions, Revit API assemblies, add-in deployment, and real model files. For pull requests that touch Revit orchestration, include the Revit version tested, the model type, the task script type, and whether the run used detach or new-local processing.
@@ -430,10 +430,10 @@ Builds deploy add-ins automatically through post-build scripts into the matching
 Build the installer with Inno Setup 5 or 6 installed:
 
 ```powershell
-.\Setup\compile_rbp_setup.bat
+.\installer\inno\compile_rbp_setup.bat
 ```
 
-Installer definitions live in `Setup/RevitBatchProcessor.iss` and `Setup/RevitBatchProcessor_BVN.iss`. RBP is not a web service and does not target Docker, Vercel, Heroku, or cloud deployment platforms.
+Installer definitions live in `installer/inno/RevitBatchProcessor.iss`. RBP is not a web service and does not target Docker, Vercel, Heroku, or cloud deployment platforms.
 
 <a id="faq--troubleshooting"></a>
 ## FAQ / Troubleshooting
@@ -444,7 +444,7 @@ Installer definitions live in `Setup/RevitBatchProcessor.iss` and `Setup/RevitBa
 Run package restore before building:
 
 ```powershell
-nuget restore .\RevitBatchProcessor.sln
+nuget restore .\Batch.sln
 ```
 
 If Visual Studio still reports missing package imports, delete stale `bin/` and `obj/` folders for the affected project and restore again.
