@@ -192,13 +192,13 @@ def GenerateRevitVersionTextPrefixes(revitVersionNumberText, includeDisciplineVe
             ])
     return [str.Join(" ", prefix, revitVersionNumberText) for prefix in REVIT_VERSION_TEXT_PREFIXES]
 
-# TODO VERSION UPDATE: Add new version prefixes here as needed.
+# Extend these prefix lists when adding new supported Revit versions.
 REVIT_VERSION_TEXT_PREFIXES_2024 = GenerateRevitVersionTextPrefixes("2024")
 REVIT_VERSION_TEXT_PREFIXES_2025 = GenerateRevitVersionTextPrefixes("2025")
 REVIT_VERSION_TEXT_PREFIXES_2026 = GenerateRevitVersionTextPrefixes("2026")
 REVIT_VERSION_TEXT_PREFIXES_2027 = GenerateRevitVersionTextPrefixes("2027")
 
-# TODO VERSION UPDATE: Add new version checks here as needed.
+# Keep these checks aligned with the prefix lists above.
 def GetRevitVersionNumberTextFromRevitVersionText(revitVersionText):
     revitVersionNumberText = None
     if not str.IsNullOrWhiteSpace(revitVersionText):

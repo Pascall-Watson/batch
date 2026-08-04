@@ -232,7 +232,7 @@ class SupportedRevitFileInfo:
                     revitVersionNumber = RevitVersion.GetSupportedRevitVersion(revitVersionText)
         else:
             revitVersionText = self.revitFileInfo.TryGetRevitVersionText()
-            # TODO VERSION UPDATE - Add conditional for new Revit version
+            # Keep this prefix map aligned with supported Revit versions.
             if not str.IsNullOrWhiteSpace(revitVersionText):
                 VERSION_PREFIX_MAP = [
                     (revit_file_version.REVIT_VERSION_TEXT_PREFIXES_2024, RevitVersion.SupportedRevitVersion.Revit2024),
