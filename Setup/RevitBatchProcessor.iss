@@ -19,24 +19,6 @@ OutputDir=Output
 ; TODO VERSION UPDATE - ADD FILES TO INSTALLER CONFIG
 [Files]
 Source: "..\BatchRvtGUI\bin\x64\Release\*"; DestDir: "{app}"; Flags: ignoreversion createallsubdirs recursesubdirs
-Source: "..\BatchRvtAddin2015\bin\x64\Release\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2015\BatchRvt"; Flags: ignoreversion createallsubdirs recursesubdirs
-Source: "..\BatchRvtAddin2015\BatchRvtAddin2015.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2015"; Flags: ignoreversion
-Source: "..\BatchRvtAddin2016\bin\x64\Release\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2016\BatchRvt"; Flags: ignoreversion createallsubdirs recursesubdirs
-Source: "..\BatchRvtAddin2016\BatchRvtAddin2016.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2016"; Flags: ignoreversion
-Source: "..\BatchRvtAddin2017\bin\x64\Release\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2017\BatchRvt"; Flags: ignoreversion createallsubdirs recursesubdirs
-Source: "..\BatchRvtAddin2017\BatchRvtAddin2017.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2017"; Flags: ignoreversion
-Source: "..\BatchRvtAddin2018\bin\x64\Release\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2018\BatchRvt"; Flags: ignoreversion createallsubdirs recursesubdirs
-Source: "..\BatchRvtAddin2018\BatchRvtAddin2018.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2018"; Flags: ignoreversion
-Source: "..\BatchRvtAddin2019\bin\x64\Release\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2019\BatchRvt"; Flags: ignoreversion createallsubdirs recursesubdirs
-Source: "..\BatchRvtAddin2019\BatchRvtAddin2019.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2019"; Flags: ignoreversion
-Source: "..\BatchRvtAddin2020\bin\x64\Release\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2020\BatchRvt"; Flags: ignoreversion createallsubdirs recursesubdirs
-Source: "..\BatchRvtAddin2020\BatchRvtAddin2020.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2020"; Flags: ignoreversion
-Source: "..\BatchRvtAddin2021\bin\x64\Release\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2021\BatchRvt"; Flags: ignoreversion createallsubdirs recursesubdirs
-Source: "..\BatchRvtAddin2021\BatchRvtAddin2021.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2021"; Flags: ignoreversion
-Source: "..\BatchRvtAddin2022\bin\x64\Release\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2022\BatchRvt"; Flags: ignoreversion createallsubdirs recursesubdirs
-Source: "..\BatchRvtAddin2022\BatchRvtAddin2022.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2022"; Flags: ignoreversion
-Source: "..\BatchRvtAddin2023\bin\x64\Release\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2023\BatchRvt"; Flags: ignoreversion createallsubdirs recursesubdirs
-Source: "..\BatchRvtAddin2023\BatchRvtAddin2023.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2023"; Flags: ignoreversion
 Source: "..\BatchRvtAddin2024\bin\x64\Release\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2024\BatchRvt"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\BatchRvtAddin2024\BatchRvtAddin2024.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2024"; Flags: ignoreversion
 Source: "..\BatchRvtAddin2025\bin\x64\Release\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2025\BatchRvt"; Flags: ignoreversion createallsubdirs recursesubdirs
