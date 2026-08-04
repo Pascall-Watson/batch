@@ -263,34 +263,17 @@ class SupportedRevitFileInfo():
                     revitVersionNumber = RevitVersion.GetSupportedRevitVersion(revitVersionText)
         else:
             revitVersionText = self.revitFileInfo.TryGetRevitVersionText()
-			# TODO VERSION UPDATE - Add conditional for new Revit version
             if not str.IsNullOrWhiteSpace(revitVersionText):
-                if any(revitVersionText.StartsWith(prefix) for prefix in revit_file_version.REVIT_VERSION_TEXT_PREFIXES_2015):
-                    revitVersionNumber = RevitVersion.SupportedRevitVersion.Revit2015
-                elif any(revitVersionText.StartsWith(prefix) for prefix in revit_file_version.REVIT_VERSION_TEXT_PREFIXES_2016):
-                    revitVersionNumber = RevitVersion.SupportedRevitVersion.Revit2016
-                elif any(revitVersionText.StartsWith(prefix) for prefix in revit_file_version.REVIT_VERSION_TEXT_PREFIXES_2017):
-                    revitVersionNumber = RevitVersion.SupportedRevitVersion.Revit2017
-                elif any(revitVersionText.StartsWith(prefix) for prefix in revit_file_version.REVIT_VERSION_TEXT_PREFIXES_2018):
-                    revitVersionNumber = RevitVersion.SupportedRevitVersion.Revit2018
-                elif any(revitVersionText.StartsWith(prefix) for prefix in revit_file_version.REVIT_VERSION_TEXT_PREFIXES_2019):
-                    revitVersionNumber = RevitVersion.SupportedRevitVersion.Revit2019
-                elif any(revitVersionText.StartsWith(prefix) for prefix in revit_file_version.REVIT_VERSION_TEXT_PREFIXES_2020):
-                    revitVersionNumber = RevitVersion.SupportedRevitVersion.Revit2020
-                elif any(revitVersionText.StartsWith(prefix) for prefix in revit_file_version.REVIT_VERSION_TEXT_PREFIXES_2021):
-                    revitVersionNumber = RevitVersion.SupportedRevitVersion.Revit2021
-                elif any(revitVersionText.StartsWith(prefix) for prefix in revit_file_version.REVIT_VERSION_TEXT_PREFIXES_2022):
-                    revitVersionNumber = RevitVersion.SupportedRevitVersion.Revit2022
-                elif any(revitVersionText.StartsWith(prefix) for prefix in revit_file_version.REVIT_VERSION_TEXT_PREFIXES_2023):
-                    revitVersionNumber = RevitVersion.SupportedRevitVersion.Revit2023
-                elif any(revitVersionText.StartsWith(prefix) for prefix in revit_file_version.REVIT_VERSION_TEXT_PREFIXES_2024):
-                    revitVersionNumber = RevitVersion.SupportedRevitVersion.Revit2024
-                elif any(revitVersionText.StartsWith(prefix) for prefix in revit_file_version.REVIT_VERSION_TEXT_PREFIXES_2025):
-                    revitVersionNumber = RevitVersion.SupportedRevitVersion.Revit2025
-                elif any(revitVersionText.StartsWith(prefix) for prefix in revit_file_version.REVIT_VERSION_TEXT_PREFIXES_2026):
-                    revitVersionNumber = RevitVersion.SupportedRevitVersion.Revit2026
-                elif any(revitVersionText.StartsWith(prefix) for prefix in revit_file_version.REVIT_VERSION_TEXT_PREFIXES_2027):
-                    revitVersionNumber = RevitVersion.SupportedRevitVersion.Revit2027
+                VERSION_PREFIX_MAP = [
+                        (revit_file_version.REVIT_VERSION_TEXT_PREFIXES_2024, RevitVersion.SupportedRevitVersion.Revit2024),
+                        (revit_file_version.REVIT_VERSION_TEXT_PREFIXES_2025, RevitVersion.SupportedRevitVersion.Revit2025),
+                        (revit_file_version.REVIT_VERSION_TEXT_PREFIXES_2026, RevitVersion.SupportedRevitVersion.Revit2026),
+                        (revit_file_version.REVIT_VERSION_TEXT_PREFIXES_2027, RevitVersion.SupportedRevitVersion.Revit2027),
+                    ]
+                for prefixes, version in VERSION_PREFIX_MAP:
+                    if any(revitVersionText.StartsWith(prefix) for prefix in prefixes):
+                        revitVersionNumber = version
+                        break
         self.revitVersionText = revitVersionText
         self.revitVersionNumber = revitVersionNumber
         return

@@ -184,20 +184,6 @@ def GenerateRevitVersionTextPrefixes(revitVersionNumberText, includeDisciplineVe
 
 
 # TODO VERSION UPDATE: Add new version prefixes here as needed.
-REVIT_VERSION_TEXT_PREFIXES_2010 = GenerateRevitVersionTextPrefixes("2010", includeDisciplineVersions=True)
-REVIT_VERSION_TEXT_PREFIXES_2011 = GenerateRevitVersionTextPrefixes("2011", includeDisciplineVersions=True)
-REVIT_VERSION_TEXT_PREFIXES_2012 = GenerateRevitVersionTextPrefixes("2012", includeDisciplineVersions=True)
-REVIT_VERSION_TEXT_PREFIXES_2013 = GenerateRevitVersionTextPrefixes("2013", includeDisciplineVersions=True)
-REVIT_VERSION_TEXT_PREFIXES_2014 = GenerateRevitVersionTextPrefixes("2014", includeDisciplineVersions=True)
-REVIT_VERSION_TEXT_PREFIXES_2015 = GenerateRevitVersionTextPrefixes("2015", includeDisciplineVersions=True)
-REVIT_VERSION_TEXT_PREFIXES_2016 = GenerateRevitVersionTextPrefixes("2016", includeDisciplineVersions=True)
-REVIT_VERSION_TEXT_PREFIXES_2017 = GenerateRevitVersionTextPrefixes("2017")
-REVIT_VERSION_TEXT_PREFIXES_2018 = GenerateRevitVersionTextPrefixes("2018")
-REVIT_VERSION_TEXT_PREFIXES_2019 = GenerateRevitVersionTextPrefixes("2019")
-REVIT_VERSION_TEXT_PREFIXES_2020 = GenerateRevitVersionTextPrefixes("2020")
-REVIT_VERSION_TEXT_PREFIXES_2021 = GenerateRevitVersionTextPrefixes("2021")
-REVIT_VERSION_TEXT_PREFIXES_2022 = GenerateRevitVersionTextPrefixes("2022")
-REVIT_VERSION_TEXT_PREFIXES_2023 = GenerateRevitVersionTextPrefixes("2023")
 REVIT_VERSION_TEXT_PREFIXES_2024 = GenerateRevitVersionTextPrefixes("2024")
 REVIT_VERSION_TEXT_PREFIXES_2025 = GenerateRevitVersionTextPrefixes("2025")
 REVIT_VERSION_TEXT_PREFIXES_2026 = GenerateRevitVersionTextPrefixes("2026")
@@ -213,20 +199,6 @@ def GetRevitVersionNumberTextFromRevitVersionText(revitVersionText):
         return any(text.StartsWith(prefix) for prefix in prefixes)
 
     VERSION_MAP = [
-        ("2010", REVIT_VERSION_TEXT_PREFIXES_2010),
-        ("2011", REVIT_VERSION_TEXT_PREFIXES_2011),
-        ("2012", REVIT_VERSION_TEXT_PREFIXES_2012),
-        ("2013", REVIT_VERSION_TEXT_PREFIXES_2013),
-        ("2014", REVIT_VERSION_TEXT_PREFIXES_2014),
-        ("2015", REVIT_VERSION_TEXT_PREFIXES_2015),
-        ("2016", REVIT_VERSION_TEXT_PREFIXES_2016),
-        ("2017", REVIT_VERSION_TEXT_PREFIXES_2017),
-        ("2018", REVIT_VERSION_TEXT_PREFIXES_2018),
-        ("2019", REVIT_VERSION_TEXT_PREFIXES_2019),
-        ("2020", REVIT_VERSION_TEXT_PREFIXES_2020),
-        ("2021", REVIT_VERSION_TEXT_PREFIXES_2021),
-        ("2022", REVIT_VERSION_TEXT_PREFIXES_2022),
-        ("2023", REVIT_VERSION_TEXT_PREFIXES_2023),
         ("2024", REVIT_VERSION_TEXT_PREFIXES_2024),
         ("2025", REVIT_VERSION_TEXT_PREFIXES_2025),
         ("2026", REVIT_VERSION_TEXT_PREFIXES_2026),

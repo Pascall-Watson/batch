@@ -20,6 +20,7 @@
 
 import clr
 import System
+import re
 clr.AddReference("System.Core")
 clr.ImportExtensions(System.Linq)
 
@@ -62,12 +63,27 @@ def IsLegacyRevitVersion(revitVersion):
 
 def IsLegacyRevitVersionText(revitVersionText):
     isLegacyRevitVersionText = False
+
+    if str.IsNullOrWhiteSpace(revitVersionText):
+        return False
+
     revitVersionNumberText = revit_file_version.GetRevitVersionNumberTextFromRevitVersionText(revitVersionText)
+
     if not str.IsNullOrWhiteSpace(revitVersionNumberText):
         try:
             isLegacyRevitVersionText = int(revitVersionNumberText) < 2024
         except Exception, e:
             pass
+
+    # Legacy files may no longer map to an explicit prefix, so also inspect the raw version text.
+    if not isLegacyRevitVersionText:
+        yearMatch = re.search(r'\b(20\d{2})\b', revitVersionText)
+        if yearMatch is not None:
+            try:
+                isLegacyRevitVersionText = int(yearMatch.group(1)) < 2024
+            except Exception, e:
+                pass
+
     return isLegacyRevitVersionText
 
 def HasAllowedRevitVersion(batchRvtConfig, supportedRevitFileInfo):
