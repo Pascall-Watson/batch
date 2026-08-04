@@ -85,7 +85,7 @@ This repository is the Pascall-Watson fork of [BVN Architecture's Revit Batch Pr
 ### Prerequisites
 
 - Windows with access to a supported Autodesk Revit installation.
-- Visual Studio 2017 or later with the .NET desktop development workload.
+- Visual Studio 2022 or later with the .NET desktop development workload.
 - .NET Framework 4.8 Developer Pack for the main solution projects.
 - MSBuild available from a Visual Studio Developer PowerShell or Developer Command Prompt.
 - NuGet CLI or Visual Studio package restore.

@@ -37,9 +37,9 @@ public static class RevitBatchProcessor
         UseSameSessionForFilesOfSameVersion = 1
     }
 
-    // NOTE: Dynamo scripts are not supported in Revit versions earlier than 2016.
+    // NOTE: Dynamo scripts are only supported for Revit 2024 and newer.
 
-    // TODO VERSION UPDATE: Add new enum for Revit version
+    // Keep enum values aligned with BatchRvtTasks.UseRevitVersion for safe casting.
     public enum UseRevitVersion
     {
         RevitFileVersion = 0,

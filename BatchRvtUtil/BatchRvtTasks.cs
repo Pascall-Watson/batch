@@ -27,7 +27,7 @@ namespace BatchRvtUtil;
 
 public static class BatchRvtTasks
 {
-    // NOTE: Dynamo scripts are not supported in Revit versions earlier than 2016.
+    // NOTE: Dynamo scripts are only supported for Revit 2024 and newer.
     public enum UseRevitVersion
     {
         RevitFileVersion = 0,
