@@ -12,7 +12,7 @@ Pascall-Watson fork of Revit Batch Processor for large-scale Revit automation wi
 
 This repository is the Pascall-Watson fork of [BVN Architecture's Revit Batch Processor](https://github.com/bvn-architecture/RevitBatchProcessor), originally authored by Daniel Rumery. Revit Batch Processor helps BIM, computational design, and Revit API teams run repeatable automation across many `.rvt` and `.rfa` files without manually opening each model. Use the Windows GUI for interactive setup, or run the command-line tool from scheduled jobs and build pipelines. This fork preserves RBP's practical batch orchestration model: version-aware Revit launching, central-file options, per-version add-ins, script templates, logging, and unattended processing.
 
-> Fork repository: [Pascall-Watson/batch](https://github.com/Pascall-Watson/batch). Upstream repository: [bvn-architecture/RevitBatchProcessor](https://github.com/bvn-architecture/RevitBatchProcessor). The shared codebase currently reports `v2.0.0` beta, and source in this fork includes add-in projects for Revit 2024 through 2027.
+> Fork repository: [Pascall-Watson/batch](https://github.com/Pascall-Watson/batch). Upstream repository: [bvn-architecture/RevitBatchProcessor](https://github.com/bvn-architecture/RevitBatchProcessor). The shared codebase currently reports `v2.1.1.0` beta, and source in this fork includes add-in projects for Revit 2024 through 2027.
 
 <a id="table-of-contents"></a>
 ## Table of Contents
