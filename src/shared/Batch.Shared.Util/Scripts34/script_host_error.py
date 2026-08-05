@@ -14,7 +14,7 @@ from System.Windows.Forms import MessageBox
 import winforms_util
 import exception_util
 
-# Must match BATCH_RVT_ERROR_WINDOW_TITLE in ScriptHostUtil.cs (BatchRvtScriptHost project).
+# Must match BATCH_RVT_ERROR_WINDOW_TITLE in ScriptHostUtil.cs (Batch.Shared.ScriptHost project).
 BATCH_RVT_ERROR_WINDOW_TITLE = "BatchRvt Script Error"
 
 SCRIPT_HOST_ERROR_DATA_VARIABLE = "revit_script_host"

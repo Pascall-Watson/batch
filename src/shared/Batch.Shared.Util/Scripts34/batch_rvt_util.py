@@ -19,11 +19,8 @@
 #
 # IronPython 3.4 port (Phase 2a). Two changes vs 2.7:
 #   1. `except IOException, e:` → `as e:`.
-#   2. The PyRevit-fallback path calls `ScriptHostUtil.GetEnvironmentVariables`
-#      and `GetBatchRvtFolderPath`, which were removed from the modern
-#      `BatchRvtScriptHost` (Phase 1 refactor). Inside the addin's host process
-#      we never take that branch — but if PyRevit support is ever revived for
-#      .NET 10, those C# methods must be restored.
+#   2. The PyRevit-fallback path resolves `Batch.Shared.Util.dll` from the
+#      loaded `Batch.Shared.ScriptHost` assembly location.
 #
 
 import clr
@@ -33,8 +30,9 @@ clr.ImportExtensions(System.Linq)
 from System import AppDomain
 from System.IO import IOException, Path
 
-BATCH_RVT_UTIL_ASSEMBLY_NAME = "BatchRvtUtil"
-BATCH_RVT_SCRIPT_HOST_ASSEMBLY_NAME = "BatchRvtScriptHost"
+BATCH_RVT_UTIL_ASSEMBLY_NAME = "Batch.Shared.Util"
+BATCH_RVT_UTIL_ASSEMBLY_FILE_NAME = BATCH_RVT_UTIL_ASSEMBLY_NAME + ".dll"
+BATCH_RVT_SCRIPT_HOST_ASSEMBLY_NAME = "Batch.Shared.ScriptHost"
 
 
 def GetExistingLoadedAssembly(assemblyName):
@@ -44,24 +42,20 @@ def GetExistingLoadedAssembly(assemblyName):
     )
 
 
-def AddBatchRvtUtilAssemblyReference():
+def AddBatchSharedUtilAssemblyReference():
     try:
         clr.AddReference(BATCH_RVT_UTIL_ASSEMBLY_NAME)
     except IOException as e:
-        # PyRevit-installed fallback. Not exercised on .NET 10 (the modern
-        # BatchRvtScriptHost no longer exposes GetEnvironmentVariables /
-        # GetBatchRvtFolderPath). Kept here as a reminder for if/when that
-        # fallback is wanted again.
-        batchRvtScriptHostAssembly = GetExistingLoadedAssembly(BATCH_RVT_SCRIPT_HOST_ASSEMBLY_NAME)
-        clr.AddReference(batchRvtScriptHostAssembly)
-        from BatchRvt.ScriptHost import ScriptHostUtil
-        environmentVariables = ScriptHostUtil.GetEnvironmentVariables()
-        batchRvtFolderPath = ScriptHostUtil.GetBatchRvtFolderPath(environmentVariables)
-        clr.AddReferenceToFileAndPath(Path.Combine(batchRvtFolderPath, BATCH_RVT_UTIL_ASSEMBLY_NAME))
+        # PyRevit-installed fallback.
+        batchSharedScriptHostAssembly = GetExistingLoadedAssembly(BATCH_RVT_SCRIPT_HOST_ASSEMBLY_NAME)
+        if batchSharedScriptHostAssembly is None:
+            raise
+        scriptHostFolderPath = Path.GetDirectoryName(batchSharedScriptHostAssembly.Location)
+        clr.AddReferenceToFileAndPath(Path.Combine(scriptHostFolderPath, BATCH_RVT_UTIL_ASSEMBLY_FILE_NAME))
     return
 
 
-AddBatchRvtUtilAssemblyReference()
+AddBatchSharedUtilAssemblyReference()
 
-import BatchRvtUtil
-from BatchRvtUtil import *
+import Batch.Shared.Util
+from Batch.Shared.Util import *
