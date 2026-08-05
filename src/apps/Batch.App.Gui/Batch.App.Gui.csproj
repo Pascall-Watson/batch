@@ -18,7 +18,7 @@
     </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>BVN32NewBrand.ico</ApplicationIcon>
+    <ApplicationIcon>Images\batch.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -198,12 +198,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Images\BVN32new.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="BVN32new.ico" />
-    <Content Include="BVN32NewBrand.ico" />
-    <EmbeddedResource Include="Images\BVN16new.ico" />
+    <Content Include="Images\batch.ico" />
+    <Content Include="Images\batch.png" />
+    <Content Include="Images\batch.svg" />
   </ItemGroup>
 
   <ItemGroup>
