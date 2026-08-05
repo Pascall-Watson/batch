@@ -24,8 +24,8 @@ jobs:
 
       - name: Restore NuGet packages
         run: |
-          nuget restore "RevitBatchProcessor.sln"
-          dotnet restore "RevitBatchProcessor.sln"
+          nuget restore "Batch.sln"
+          dotnet restore "Batch.sln"
       
       - name: Setup Python environment
         uses: actions/setup-python@v2
@@ -52,17 +52,17 @@ jobs:
           
       - name: Update installer config
         run: |
-          $content = Get-Content -Path Setup/RevitBatchProcessor.iss -Raw
+          $content = Get-Content -Path installer/inno/RevitBatchProcessor.iss -Raw
           echo "Input installer config is $content"
           $content = $content -replace 'OutputBaseFilename=.*', 'OutputBaseFilename=${{steps.version_num_set.outputs.output_base_filename}}'
           $content = $content -replace '#define AppVersion ".*"', '#define AppVersion "${{steps.version_num_set.outputs.version}}"'
 
           echo "Updated installer config is $content"
-          Set-Content -Path Setup/RevitBatchProcessor.iss -Value $content
+          Set-Content -Path installer/inno/RevitBatchProcessor.iss -Value $content
 
       - name: Update version number - GlobalAssemblyInfo.cs
         run: |
-          $assemblyInfoFile = "Common/GlobalAssemblyInfo.cs"
+          $assemblyInfoFile = "src/shared/Common/GlobalAssemblyInfo.cs"
           $fileContent = Get-Content -Path $assemblyInfoFile -Raw
           echo "Input version number is $fileContent"
           $fileContent = $fileContent -replace '\("\d+\.\d+\.\d+(\.\d+)?"\)', "(`"${{steps.version_num_set.outputs.version}}`")"
@@ -71,11 +71,11 @@ jobs:
 
       - name: Build solution
         run: |
-            msbuild "RevitBatchProcessor.sln" /p:Configuration=Release /p:Platform="x64" /p:EnableAddinDeployment=false /m
+            msbuild "Batch.sln" /p:Configuration=Release /p:Platform="x64" /p:EnableAddinDeployment=false /m
 
       - name: Run unit tests
         run: |
-            dotnet test "BatchRvtUtil.Tests/BatchRvtUtil.Tests.csproj" --configuration Release --no-build -p:EnableAddinDeployment=false -v minimal
+            dotnet test "tests/Batch.Shared.Util.Tests/Batch.Shared.Util.Tests.csproj" --configuration Release --no-build -p:EnableAddinDeployment=false -v minimal
 
       - name: Verify installer sources exist
         shell: pwsh
@@ -89,18 +89,18 @@ jobs:
             }
 
             # 1. Inno Setup script file
-            $issFile = "Setup/RevitBatchProcessor.iss"
+            $issFile = "installer/inno/RevitBatchProcessor.iss"
             if (-not (Test-Path -Path $issFile -PathType Leaf)) { $missing += "Missing file: $issFile" }
 
             # 2. GUI output directory
-            $guiOut = "BatchRvtGUI/bin/x64/Release"
+            $guiOut = "src/apps/Batch.App.Gui/bin/x64/Release"
             $res = Test-DirWithFiles $guiOut; if ($res) { $missing += $res }
 
             # 3. Addin years 2024-2027 (directories + .addin files)
             foreach ($year in 2024..2027) {
-              $addinDir = "BatchRvtAddin$year/bin/x64/Release"
+              $addinDir = "src/addins/Batch.AddIn.$year/bin/x64/Release"
               $res = Test-DirWithFiles $addinDir; if ($res) { $missing += $res }
-              $addinFile = "BatchRvtAddin$year/BatchRvtAddin$year.addin"
+              $addinFile = "src/addins/Batch.AddIn.$year/BatchRvtAddin$year.addin"
               if (-not (Test-Path -Path $addinFile -PathType Leaf)) { $missing += "Missing file: $addinFile" }
             }
 
@@ -116,7 +116,7 @@ jobs:
         id: create_installer_file
         uses: Minionguyjpro/Inno-Setup-Action@v1.2.7
         with: 
-          path: Setup/RevitBatchProcessor.iss
+          path: installer/inno/RevitBatchProcessor.iss
           
       - name: Upload Release Asset
         id: upload-release-asset 
@@ -125,7 +125,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: Setup\Output\${{steps.version_num_set.outputs.asset_filename}}
+          asset_path: installer\inno\Output\${{steps.version_num_set.outputs.asset_filename}}
           asset_name: ${{steps.version_num_set.outputs.asset_filename}}
           asset_content_type: application/octet-stream
 
