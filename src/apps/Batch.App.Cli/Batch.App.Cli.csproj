@@ -45,7 +45,6 @@
           <HintPath>..\..\..\packages\FluentAssertions.6.8.0\lib\net47\FluentAssertions.dll</HintPath>
         </Reference>
         <Reference Include="Microsoft.CSharp" />
-        <Reference Include="Microsoft.Win32.Registry, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
         <Reference Include="Moq, Version=4.18.0.0, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
           <HintPath>..\..\..\packages\Moq.4.18.3\lib\net462\Moq.dll</HintPath>
         </Reference>
