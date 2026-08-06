@@ -295,10 +295,11 @@ namespace Batch.Shared.Util.Tests
             {
                 return (string)method.Invoke(null, new object[] { baseDirectory });
             }
-            catch (TargetInvocationException ex) when (ex.InnerException != null)
-            {
-                throw ex.InnerException;
-            }
+catch (TargetInvocationException ex) when (ex.InnerException != null)
+{
+    System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+    throw;
+}
         }
     }
 }
