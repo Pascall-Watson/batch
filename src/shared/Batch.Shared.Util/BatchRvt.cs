@@ -146,8 +146,8 @@ public static class BatchRvt
 
         var candidateFilePaths = new[]
         {
-            Path.Combine(baseDirectory, BATCHRVT_EXECUTABLE_FILENAME),
-            Path.Combine(baseDirectory, BATCHRVT_CLI_EXECUTABLE_FILENAME)
+            Path.Combine(baseDirectory, BATCHRVT_CLI_EXECUTABLE_FILENAME),
+            Path.Combine(baseDirectory, BATCHRVT_EXECUTABLE_FILENAME)
         };
 
         var executableFilePath = candidateFilePaths.FirstOrDefault(File.Exists);

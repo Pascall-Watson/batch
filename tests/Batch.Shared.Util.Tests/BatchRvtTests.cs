@@ -206,7 +206,7 @@ namespace Batch.Shared.Util.Tests
         }
 
         [Fact]
-        public void ResolveBatchRvtExecutableFilePath_ShouldPreferLegacyExecutableName()
+        public void ResolveBatchRvtExecutableFilePath_ShouldPreferCliExecutableName()
         {
             var tempDirectoryPath = CreateTempDirectory();
 
@@ -220,7 +220,7 @@ namespace Batch.Shared.Util.Tests
 
                 var executablePath = ResolveBatchRvtExecutableFilePathForTest(tempDirectoryPath);
 
-                Assert.Equal(legacyExecutablePath, executablePath);
+                Assert.Equal(cliExecutablePath, executablePath);
             }
             finally
             {
@@ -229,19 +229,19 @@ namespace Batch.Shared.Util.Tests
         }
 
         [Fact]
-        public void ResolveBatchRvtExecutableFilePath_ShouldFallbackToCliExecutableName()
+        public void ResolveBatchRvtExecutableFilePath_ShouldFallbackToLegacyExecutableName()
         {
             var tempDirectoryPath = CreateTempDirectory();
 
             try
             {
-                var cliExecutablePath = Path.Combine(tempDirectoryPath, "Batch.App.Cli.exe");
+                var legacyExecutablePath = Path.Combine(tempDirectoryPath, "BatchRvt.exe");
 
-                File.WriteAllText(cliExecutablePath, string.Empty);
+                File.WriteAllText(legacyExecutablePath, string.Empty);
 
                 var executablePath = ResolveBatchRvtExecutableFilePathForTest(tempDirectoryPath);
 
-                Assert.Equal(cliExecutablePath, executablePath);
+                Assert.Equal(legacyExecutablePath, executablePath);
             }
             finally
             {
