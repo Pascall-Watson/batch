@@ -82,6 +82,8 @@ public static class BatchRvt
     private const string SCRIPT_DATA_FOLDER_NAME = "BatchRvt";
 
     private const string MONITOR_SCRIPT_FILE_NAME = "batch_rvt.py";
+    private const string BATCHRVT_EXECUTABLE_FILENAME = "BatchRvt.exe";
+    private const string BATCHRVT_CLI_EXECUTABLE_FILENAME = "Batch.App.Cli.exe";
 
 
     public static string ConstructCommandLineArguments(IEnumerable<KeyValuePair<string, string>> commandLineArguments)
@@ -116,10 +118,11 @@ public static class BatchRvt
     )
     {
         var baseDirectory = GetBatchRvtFolderPath();
+        var executableFilePath = ResolveBatchRvtExecutableFilePath(baseDirectory);
 
         var batchRvtOptions = SetBatchRvtOptions(settingsFilePath, logFolderPath, sessionId, taskData, testModeFolderPath);
 
-        var psi = new ProcessStartInfo(Path.Combine(baseDirectory, "BatchRvt.exe"))
+        var psi = new ProcessStartInfo(executableFilePath)
         {
             UseShellExecute = false,
             WorkingDirectory = baseDirectory,
@@ -134,6 +137,30 @@ public static class BatchRvt
         var batchRvtProcess = Process.Start(psi);
 
         return batchRvtProcess;
+    }
+
+    internal static string ResolveBatchRvtExecutableFilePath(string baseDirectory)
+    {
+        if (string.IsNullOrWhiteSpace(baseDirectory))
+            throw new ArgumentException("BatchRvt base directory was not specified.", nameof(baseDirectory));
+
+        var candidateFilePaths = new[]
+        {
+            Path.Combine(baseDirectory, BATCHRVT_EXECUTABLE_FILENAME),
+            Path.Combine(baseDirectory, BATCHRVT_CLI_EXECUTABLE_FILENAME)
+        };
+
+        var executableFilePath = candidateFilePaths.FirstOrDefault(File.Exists);
+
+        if (!string.IsNullOrWhiteSpace(executableFilePath))
+            return executableFilePath;
+
+        var message =
+            "Could not find the BatchRvt launcher executable. " +
+            "Expected one of the following files:" + Environment.NewLine +
+            string.Join(Environment.NewLine, candidateFilePaths);
+
+        throw new FileNotFoundException(message, candidateFilePaths.First());
     }
 
     private static Dictionary<string, string> SetBatchRvtOptions(string settingsFilePath, string logFolderPath, string sessionId,

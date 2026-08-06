@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Batch.Shared.Util;
 using Xunit;
 
@@ -204,11 +205,100 @@ namespace Batch.Shared.Util.Tests
             }
         }
 
+        [Fact]
+        public void ResolveBatchRvtExecutableFilePath_ShouldPreferLegacyExecutableName()
+        {
+            var tempDirectoryPath = CreateTempDirectory();
+
+            try
+            {
+                var legacyExecutablePath = Path.Combine(tempDirectoryPath, "BatchRvt.exe");
+                var cliExecutablePath = Path.Combine(tempDirectoryPath, "Batch.App.Cli.exe");
+
+                File.WriteAllText(legacyExecutablePath, string.Empty);
+                File.WriteAllText(cliExecutablePath, string.Empty);
+
+                var executablePath = ResolveBatchRvtExecutableFilePathForTest(tempDirectoryPath);
+
+                Assert.Equal(legacyExecutablePath, executablePath);
+            }
+            finally
+            {
+                Directory.Delete(tempDirectoryPath, true);
+            }
+        }
+
+        [Fact]
+        public void ResolveBatchRvtExecutableFilePath_ShouldFallbackToCliExecutableName()
+        {
+            var tempDirectoryPath = CreateTempDirectory();
+
+            try
+            {
+                var cliExecutablePath = Path.Combine(tempDirectoryPath, "Batch.App.Cli.exe");
+
+                File.WriteAllText(cliExecutablePath, string.Empty);
+
+                var executablePath = ResolveBatchRvtExecutableFilePathForTest(tempDirectoryPath);
+
+                Assert.Equal(cliExecutablePath, executablePath);
+            }
+            finally
+            {
+                Directory.Delete(tempDirectoryPath, true);
+            }
+        }
+
+        [Fact]
+        public void ResolveBatchRvtExecutableFilePath_ShouldThrowWhenNoExecutableExists()
+        {
+            var tempDirectoryPath = CreateTempDirectory();
+
+            try
+            {
+                var exception = Assert.Throws<FileNotFoundException>(() =>
+                    ResolveBatchRvtExecutableFilePathForTest(tempDirectoryPath));
+
+                Assert.Contains("BatchRvt.exe", exception.Message);
+                Assert.Contains("Batch.App.Cli.exe", exception.Message);
+            }
+            finally
+            {
+                Directory.Delete(tempDirectoryPath, true);
+            }
+        }
+
         private static string CreateTempSettingsFile(string json)
         {
             var filePath = Path.GetTempFileName();
             File.WriteAllText(filePath, json);
             return filePath;
+        }
+
+        private static string CreateTempDirectory()
+        {
+            var directoryPath = Path.Combine(Path.GetTempPath(), "BatchRvtTests-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(directoryPath);
+            return directoryPath;
+        }
+
+        private static string ResolveBatchRvtExecutableFilePathForTest(string baseDirectory)
+        {
+            var method = typeof(BatchRvt).GetMethod(
+                "ResolveBatchRvtExecutableFilePath",
+                BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static
+            );
+
+            Assert.NotNull(method);
+
+            try
+            {
+                return (string)method.Invoke(null, new object[] { baseDirectory });
+            }
+            catch (TargetInvocationException ex) when (ex.InnerException != null)
+            {
+                throw ex.InnerException;
+            }
         }
     }
 }
