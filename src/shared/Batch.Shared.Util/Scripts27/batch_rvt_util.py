@@ -25,8 +25,9 @@ clr.ImportExtensions(System.Linq)
 from System import AppDomain
 from System.IO import IOException, Path
 
-BATCH_RVT_UTIL_ASSEMBLY_NAME = "BatchRvtUtil"
-BATCH_RVT_SCRIPT_HOST_ASSEMBLY_NAME = "BatchRvtScriptHost"
+BATCH_RVT_UTIL_ASSEMBLY_NAME = "Batch.Shared.Util"
+BATCH_RVT_UTIL_ASSEMBLY_FILE_NAME = BATCH_RVT_UTIL_ASSEMBLY_NAME + ".dll"
+BATCH_RVT_SCRIPT_HOST_ASSEMBLY_NAME = "Batch.Shared.ScriptHost"
 
 def GetExistingLoadedAssembly(assemblyName):
     return (
@@ -34,20 +35,20 @@ def GetExistingLoadedAssembly(assemblyName):
             .FirstOrDefault(lambda assembly: assembly.GetName().Name == assemblyName)
         )
 
-def AddBatchRvtUtilAssemblyReference():
+def AddBatchSharedUtilAssemblyReference():
     try:
         clr.AddReference(BATCH_RVT_UTIL_ASSEMBLY_NAME)
     except IOException, e: # Can occur if PyRevit is installed. Need to use AddReferenceToFileAndPath() in this case.
-        batchRvtScriptHostAssembly = GetExistingLoadedAssembly(BATCH_RVT_SCRIPT_HOST_ASSEMBLY_NAME)
-        clr.AddReference(batchRvtScriptHostAssembly)
-        from BatchRvt.ScriptHost import ScriptHostUtil
-        environmentVariables = ScriptHostUtil.GetEnvironmentVariables()
-        batchRvtFolderPath = ScriptHostUtil.GetBatchRvtFolderPath(environmentVariables)
-        clr.AddReferenceToFileAndPath(Path.Combine(batchRvtFolderPath, BATCH_RVT_UTIL_ASSEMBLY_NAME))
+        # Resolve the utility assembly by file path from the loaded script-host assembly location.
+        batchSharedScriptHostAssembly = GetExistingLoadedAssembly(BATCH_RVT_SCRIPT_HOST_ASSEMBLY_NAME)
+        if batchSharedScriptHostAssembly is None:
+            raise
+        scriptHostFolderPath = Path.GetDirectoryName(batchSharedScriptHostAssembly.Location)
+        clr.AddReferenceToFileAndPath(Path.Combine(scriptHostFolderPath, BATCH_RVT_UTIL_ASSEMBLY_FILE_NAME))
     return
 
-AddBatchRvtUtilAssemblyReference()
+AddBatchSharedUtilAssemblyReference()
 
-import BatchRvtUtil
-from BatchRvtUtil import *
+import Batch.Shared.Util
+from Batch.Shared.Util import *
 
