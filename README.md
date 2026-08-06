@@ -12,7 +12,7 @@ Pascall-Watson fork of Revit Batch Processor for large-scale Revit automation wi
 
 This repository is the Pascall-Watson fork of [BVN Architecture's Revit Batch Processor](https://github.com/bvn-architecture/RevitBatchProcessor), originally authored by Daniel Rumery. Revit Batch Processor helps BIM, computational design, and Revit API teams run repeatable automation across many `.rvt` and `.rfa` files without manually opening each model. Use the Windows GUI for interactive setup, or run the command-line tool from scheduled jobs and build pipelines. This fork preserves RBP's practical batch orchestration model: version-aware Revit launching, central-file options, per-version add-ins, script templates, logging, and unattended processing.
 
-> Fork repository: [Pascall-Watson/batch](https://github.com/Pascall-Watson/batch). Upstream repository: [bvn-architecture/RevitBatchProcessor](https://github.com/bvn-architecture/RevitBatchProcessor). The shared codebase currently reports `v2.2.0.0.0` beta, and source in this fork includes add-in projects for Revit 2024 through 2027.
+> Fork repository: [Pascall-Watson/batch](https://github.com/Pascall-Watson/batch). Upstream repository: [bvn-architecture/RevitBatchProcessor](https://github.com/bvn-architecture/RevitBatchProcessor). The shared codebase currently reports `v2.3.0.0.0.0` beta, and source in this fork includes add-in projects for Revit 2024 through 2027.
 
 <a id="table-of-contents"></a>
 ## Table of Contents
@@ -70,7 +70,7 @@ This repository is the Pascall-Watson fork of [BVN Architecture's Revit Batch Pr
 | Runtime target | net48 + modern .NET (Windows) | Main GUI/CLI run on .NET Framework 4.8; Revit 2025-2026 add-ins target `net8.0-windows`; Revit 2027 add-in targets `net10.0-windows`; core utility/script host are multi-targeted (`net48;net10.0-windows`). |
 | Revit 2027 add-in | `net10.0-windows` | Uses `Nice3point.Revit.Api.RevitAPI` and `Nice3point.Revit.Api.RevitAPIUI` packages. |
 | Revit integration | Autodesk Revit API / RevitAPIUI | Per-version add-in projects for Revit 2024-2027. |
-| Script execution | IronPython 2.2.0.0 + 2.2.0.0 | Revit 2024-2026 use the Scripts27 runtime (IronPython 2.7), while Revit 2027 uses Scripts34 (IronPython 3.4). |
+| Script execution | IronPython 2.3.0.0.0 + 2.3.0.0.0 | Revit 2024-2026 use the Scripts27 runtime (IronPython 2.7), while Revit 2027 uses Scripts34 (IronPython 3.4). |
 | Visual scripting | Dynamo 1.3+ | Runs Dynamo `.dyn` workspaces when Dynamo is installed for the target Revit version. |
 | Data input | `.txt`, `.xlsx` | Text files contain one model path per line; Excel files use the first column. |
 | Serialization | Newtonsoft.Json | Used for settings and data exchange. |
@@ -105,10 +105,10 @@ Install from this fork's packaged releases when an installer is available:
 Start-Process "https://github.com/Pascall-Watson/batch/releases"
 ```
 
-The original BVN `v2.2.0.0` beta installer remains available from the upstream project for comparison or legacy installation testing:
+The original BVN `v2.3.0.0.0` beta installer remains available from the upstream project for comparison or legacy installation testing:
 
 ```powershell
-Start-Process "https://github.com/bvn-architecture/RevitBatchProcessor/releases/download/v2.2.0.0/RevitBatchProcessorSetup_v2.2.0.0.exe"
+Start-Process "https://github.com/bvn-architecture/RevitBatchProcessor/releases/download/v2.3.0.0.0/RevitBatchProcessorSetup_v2.3.0.0.0.exe"
 ```
 
 Build from source when you want to develop, debug, or package the project yourself:

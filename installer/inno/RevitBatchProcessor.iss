@@ -1,5 +1,5 @@
 #define AppName "Revit Batch Processor"
-#define AppVersion "2.2.0.0"
+#define AppVersion "2.3.0.0"
 
 [Setup]
 AppName={#AppName}
@@ -13,7 +13,7 @@ SetupLogging=True
 ArchitecturesInstallIn64BitMode=x64compatible
 ArchitecturesAllowed=x64compatible
 DefaultGroupName=Revit Batch Processor
-OutputBaseFilename=Pascall-Watson-RevitBatchProcessor-2.2.0.0-Setup
+OutputBaseFilename=Pascall-Watson-RevitBatchProcessor-2.3.0.0-Setup
 OutputDir=Output
 
 ; TODO VERSION UPDATE - ADD FILES TO INSTALLER CONFIG
@@ -29,6 +29,7 @@ Source: "..\..\src\addins\Batch.AddIn.2027\bin\x64\Release\*"; DestDir: "{userap
 Source: "..\..\src\addins\Batch.AddIn.2027\BatchRvtAddin2027.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2027"; Flags: ignoreversion
 [Icons]
 Name: "{group}\Revit Batch Processor (GUI)"; Filename: "{app}\Batch.App.Gui.exe"; WorkingDir: "{app}"
+
 
 
 
