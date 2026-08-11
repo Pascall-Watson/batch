@@ -6,5 +6,41 @@
         <!-- Redirect the relative ruleset reference used in legacy projects to the repo-root copy -->
         <CodeAnalysisRuleSet Condition="'$(CodeAnalysisRuleSet)' == 'MinimumRecommendedRules.ruleset'">$(MSBuildThisFileDirectory)MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
         <EnableAddinDeployment Condition="'$(EnableAddinDeployment)' == ''">true</EnableAddinDeployment>
+        <RevitAddinDeploymentRoot Condition="'$(RevitAddinDeploymentRoot)' == ''">$(APPDATA)\Autodesk\Revit\Addins</RevitAddinDeploymentRoot>
     </PropertyGroup>
+
+    <Target Name="DeployRevitAddin"
+            AfterTargets="PostBuildEvent"
+            Condition="'$(EnableAddinDeployment)' == 'true' and '$(RevitAddinVersion)' != ''">
+        <PropertyGroup>
+            <RevitAddinsDir>$(RevitAddinDeploymentRoot)\$(RevitAddinVersion)</RevitAddinsDir>
+            <TargetAddinFolderPath>$(RevitAddinsDir)\BatchRvt</TargetAddinFolderPath>
+            <AddinFileName>BatchRvtAddin$(RevitAddinVersion).addin</AddinFileName>
+            <SourceAddinFilePath>$(ProjectDir)$(AddinFileName)</SourceAddinFilePath>
+            <TargetAddinFilePath>$(RevitAddinsDir)\$(AddinFileName)</TargetAddinFilePath>
+        </PropertyGroup>
+
+        <Message Importance="high" Text="Deploying Revit addin $(AddinFileName) to $(TargetAddinFolderPath)" />
+        <Error Condition="!Exists('$(SourceAddinFilePath)')" Text="Could not find addin manifest '$(SourceAddinFilePath)'." />
+
+        <RemoveDir Directories="$(TargetAddinFolderPath)" Condition="Exists('$(TargetAddinFolderPath)')" />
+        <Delete Files="$(TargetAddinFilePath)" Condition="Exists('$(TargetAddinFilePath)')" />
+
+        <MakeDir Directories="$(RevitAddinsDir)" Condition="!Exists('$(RevitAddinsDir)')" />
+        <MakeDir Directories="$(TargetAddinFolderPath)" Condition="!Exists('$(TargetAddinFolderPath)')" />
+
+        <ItemGroup>
+            <_AddinPayloadFiles Include="$(TargetDir)**\*" />
+        </ItemGroup>
+
+        <Copy SourceFiles="@(_AddinPayloadFiles)"
+              DestinationFiles="@(_AddinPayloadFiles->'$(TargetAddinFolderPath)\%(RecursiveDir)%(Filename)%(Extension)')"
+              OverwriteReadOnlyFiles="true" />
+
+        <Copy SourceFiles="$(SourceAddinFilePath)"
+              DestinationFiles="$(TargetAddinFilePath)"
+              OverwriteReadOnlyFiles="true" />
+
+        <Message Importance="high" Text="Revit addin deployment completed: $(TargetAddinFilePath)" />
+    </Target>
 </Project>

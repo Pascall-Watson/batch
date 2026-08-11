@@ -4,6 +4,10 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Batch.AddIn.Revit2025</RootNamespace>
     <AssemblyName>Batch.AddIn.2025</AssemblyName>
+    <RevitAddinVersion>2025</RevitAddinVersion>
+    <!-- xunit.core.props sets IsTestProject=true; this project contains no tests -->
+    <IsTestProject>false</IsTestProject>
+
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
     <!-- Prevent runtimes folder creation -->
@@ -57,7 +61,4 @@
     <ProjectReference Include="..\..\shared\Batch.Shared.Util\Batch.Shared.Util.csproj" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(EnableAddinDeployment)' == 'true'">
-    <Exec Command="call &quot;$(ProjectDir)..\..\..\deployment\revit-addin\DeployAddin.bat&quot; &quot;$(ProjectDir)&quot; &quot;$(TargetDir)&quot; &quot;2025&quot;" />
-  </Target>
 </Project>
