@@ -14,6 +14,8 @@
     <FileAlignment>512</FileAlignment>
     <LangVersion>latestmajor</LangVersion>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+    <!-- xunit.core.props sets IsTestProject=true; this project contains no tests -->
+    <IsTestProject>false</IsTestProject>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
   </PropertyGroup>
