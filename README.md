@@ -14,7 +14,7 @@ Fully automated batch processing of Revit files with your own Python or Dynamo t
 
 RBP helps BIM, computational design, and Revit API teams run repeatable automation across many `.rvt` and `.rfa` files without manually opening each model. Use the Windows GUI for interactive setup, or run the command-line tool from scheduled jobs and build pipelines. The batch engine handles version-aware Revit launching, central-file options, per-version add-ins, logging, dialog handling, and unattended processing.
 
-> **This fork:** [Pascall-Watson/batch](https://github.com/Pascall-Watson/batch) · **Upstream:** [bvn-architecture/RevitBatchProcessor](https://github.com/bvn-architecture/RevitBatchProcessor) · **Current release:** <!-- RBP-VERSION -->`2.3.0.0`<!-- /RBP-VERSION --> ([download](https://github.com/Pascall-Watson/batch/releases))
+> **This fork:** [Pascall-Watson/batch](https://github.com/Pascall-Watson/batch) · **Upstream:** [bvn-architecture/RevitBatchProcessor](https://github.com/bvn-architecture/RevitBatchProcessor) · **Current release:** <!-- RBP-VERSION -->`2.3.2.0`<!-- /RBP-VERSION --> ([download](https://github.com/Pascall-Watson/batch/releases))
 
 ## Table of Contents
 
