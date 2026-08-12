@@ -94,6 +94,8 @@ def clean_file_name(raw_name):
 
 def csv_escape(raw_value):
     value = safe_unicode(raw_value)
+    if value and value[0] in (u"=", u"+", u"-", u"@", u"\t", u"\r"):
+        value = u"'" + value
     value = value.replace(u'"', u'""')
     return u'"' + value + u'"'
 
