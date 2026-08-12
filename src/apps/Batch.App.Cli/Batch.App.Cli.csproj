@@ -13,6 +13,8 @@
         <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>latestmajor</LangVersion>
+        <!-- xunit.core.props sets IsTestProject=true; this project contains no tests -->
+        <IsTestProject>false</IsTestProject>
     </PropertyGroup>
     <PropertyGroup>
         <StartupObject>Batch.App.Cli.BatchRvtMain</StartupObject>

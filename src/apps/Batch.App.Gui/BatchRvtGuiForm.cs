@@ -549,7 +549,19 @@ public partial class BatchRvtGuiForm : Form
 
         var settingsFilePath = BatchRvtSettings.GetDefaultSettingsFilePath();
 
-        batchRvtProcess = BatchRvt.StartBatchRvt(settingsFilePath);
+        try
+        {
+            batchRvtProcess = BatchRvt.StartBatchRvt(settingsFilePath);
+        }
+        catch (Exception ex)
+        {
+            var errorMessage = new StringBuilder();
+            errorMessage.AppendLine("ERROR: Failed to start the BatchRvt process.");
+            errorMessage.AppendLine();
+            errorMessage.AppendLine(ex.Message);
+            ShowErrorMessageBox(errorMessage.ToString());
+            return;
+        }
 
         readBatchRvtOutput_Timer = new Timer { Interval = READ_OUTPUT_INTERVAL_IN_MS };
         readBatchRvtOutput_Timer.Tick += readBatchRvtOutput_Timer_Tick;

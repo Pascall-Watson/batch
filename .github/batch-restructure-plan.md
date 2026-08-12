@@ -95,25 +95,25 @@ batch/
 
 ---
 
-## Path Rename Map (Current -> Proposed)
+## Canonical Modern Paths
 
-| Current | Proposed |
+| Component | Path |
 | --- | --- |
-| `BatchRvt/` | `src/apps/Batch.App.Cli/` |
-| `BatchRvtGUI/` | `src/apps/Batch.App.Gui/` |
-| `BatchRevitDynamo/` | `src/integrations/Batch.Integration.Dynamo/` |
-| `BatchRvtUtil/` | `src/shared/Batch.Shared.Util/` |
-| `BatchRvtScriptHost/` | `src/shared/Batch.Shared.ScriptHost/` |
-| `BatchRvtAddin2024/` | `src/addins/Batch.AddIn.2024/` |
-| `BatchRvtAddin2025/` | `src/addins/Batch.AddIn.2025/` |
-| `BatchRvtAddin2026/` | `src/addins/Batch.AddIn.2026/` |
-| `BatchRvtAddin2027/` | `src/addins/Batch.AddIn.2027/` |
-| `BatchRvtUtil.Tests/` | `tests/Batch.Shared.Util.Tests/` |
-| `Common/` | `src/shared/Common/` |
-| `AddinDeployment/` | `deployment/revit-addin/` |
-| `Setup/` | `installer/inno/` |
-| `References/` | `third_party/References/` |
-| `packages/` | `packages/` (retain at repo root) |
+| CLI app | `src/apps/Batch.App.Cli/` |
+| GUI app | `src/apps/Batch.App.Gui/` |
+| Dynamo integration | `src/integrations/Batch.Integration.Dynamo/` |
+| Shared util library | `src/shared/Batch.Shared.Util/` |
+| Shared script host library | `src/shared/Batch.Shared.ScriptHost/` |
+| Revit addin 2024 | `src/addins/Batch.AddIn.2024/` |
+| Revit addin 2025 | `src/addins/Batch.AddIn.2025/` |
+| Revit addin 2026 | `src/addins/Batch.AddIn.2026/` |
+| Revit addin 2027 | `src/addins/Batch.AddIn.2027/` |
+| Shared util tests | `tests/Batch.Shared.Util.Tests/` |
+| Common shared code | `src/shared/Common/` |
+| Addin deployment scripts | `deployment/revit-addin/` |
+| Installer scripts | `installer/inno/` |
+| Third-party references | `third_party/References/` |
+| NuGet package cache | `packages/` (retain at repo root) |
 
 ---
 
