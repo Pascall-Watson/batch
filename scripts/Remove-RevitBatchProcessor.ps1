@@ -41,6 +41,24 @@ if ($revitProcesses) {
 $script:removedCount = 0
 $script:failedCount  = 0
 
+# $PSCmdlet is $null when the script body is executed via Invoke-Expression/iex
+# (e.g. to bypass AppLocker path rules). Fall back to "always proceed" in that case.
+function Test-ShouldProcess {
+    param(
+        [Parameter(Mandatory)][string]$Target,
+        [Parameter(Mandatory)][string]$Action
+    )
+    if ($null -ne $PSCmdlet) {
+        return $PSCmdlet.ShouldProcess($Target, $Action)
+    }
+
+    if ($WhatIfPreference) {
+        Write-Host "What if: Performing the operation `"$Action`" on target `"$Target`"." -ForegroundColor Yellow
+        return $false
+    }
+
+    return $true
+
 function Remove-ItemSafely {
     param(
         [Parameter(Mandatory)][string]$Path,
@@ -51,7 +69,7 @@ function Remove-ItemSafely {
         return
     }
     $label = if ($Description) { $Description } else { $Path }
-    if ($PSCmdlet.ShouldProcess($Path, "Remove $label")) {
+    if (Test-ShouldProcess -Target $Path -Action "Remove $label") {
         try {
             Remove-Item -LiteralPath $Path -Recurse -Force -ErrorAction Stop
             Write-Host "[REMOVED] $Path" -ForegroundColor Green
@@ -101,7 +119,7 @@ Remove-ItemSafely -Path (Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Pr
 # --- 5. Uninstall registry key -------------------------------------------------------
 $uninstallKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{B5CA57EA-7BB2-4620-916C-AE98376C1EF1}_is1'
 if (Test-Path -LiteralPath $uninstallKey) {
-    if ($PSCmdlet.ShouldProcess($uninstallKey, 'Remove uninstall registry key')) {
+    if (Test-ShouldProcess -Target $uninstallKey -Action 'Remove uninstall registry key') {
         try {
             Remove-Item -LiteralPath $uninstallKey -Recurse -Force -ErrorAction Stop
             Write-Host "[REMOVED] $uninstallKey" -ForegroundColor Green
