@@ -51,8 +51,13 @@ function Test-ShouldProcess {
     if ($null -ne $PSCmdlet) {
         return $PSCmdlet.ShouldProcess($Target, $Action)
     }
+
+    if ($WhatIfPreference) {
+        Write-Host "What if: Performing the operation `"$Action`" on target `"$Target`"." -ForegroundColor Yellow
+        return $false
+    }
+
     return $true
-}
 
 function Remove-ItemSafely {
     param(
