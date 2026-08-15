@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using Batch.Shared.Util;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Text;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -17,6 +19,17 @@ namespace Batch.App.Ui;
 
 public sealed class MainWindow : Window
 {
+    private const uint MB_YESNOCANCEL = 0x00000003;
+    private const uint MB_YESNO = 0x00000004;
+    private const uint MB_ICONQUESTION = 0x00000020;
+    private const uint MB_ICONASTERISK = 0x00000040;
+    private const uint MB_DEFBUTTON1 = 0x00000000;
+    private const uint MB_DEFBUTTON3 = 0x00000200;
+
+    private const int IDYES = 6;
+    private const int IDNO = 7;
+    private const int IDCANCEL = 2;
+
     private enum RunUiState
     {
         Ready,
@@ -47,6 +60,7 @@ public sealed class MainWindow : Window
     private BatchRvtSettings _settings = new();
     private Process? _batchRvtProcess;
     private string _settingsFilePath = BatchRvtSettings.GetDefaultSettingsFilePath();
+    private bool _skipProcessTerminationOnClose;
 
     public MainWindow()
     {
@@ -54,6 +68,7 @@ public sealed class MainWindow : Window
         Content = BuildContent();
 
         Closed += MainWindow_Closed;
+        AppWindow.Closing += AppWindow_Closing;
 
         _settingsPathTextBox.Text = _settingsFilePath;
         SetRunUiState(RunUiState.Ready);
@@ -262,9 +277,42 @@ public sealed class MainWindow : Window
         return rootGrid;
     }
 
+    private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
+    {
+        if (_batchRvtProcess is null || _batchRvtProcess.HasExited)
+            return;
+
+        var closeMessage = "Do you want to terminate the currently running task?";
+        var closeResponse = ShowMessageBox(closeMessage, MB_YESNOCANCEL | MB_ICONASTERISK | MB_DEFBUTTON3);
+
+        if (closeResponse == IDCANCEL)
+        {
+            args.Cancel = true;
+            return;
+        }
+
+        if (closeResponse == IDYES)
+        {
+            StopRunningProcess(silent: false, killProcessTree: false);
+        }
+        else if (closeResponse == IDNO)
+        {
+            _skipProcessTerminationOnClose = true;
+        }
+
+        var saveMessage = "Do you want to save the current settings as default?";
+        var saveResponse = ShowMessageBox(saveMessage, MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON1);
+
+        if (saveResponse == IDYES)
+            SaveCurrentSettings();
+    }
+
     private void MainWindow_Closed(object sender, WindowEventArgs args)
     {
-        StopRunningProcess(silent: true);
+        if (_skipProcessTerminationOnClose)
+            return;
+
+        StopRunningProcess(silent: true, killProcessTree: false);
     }
 
     private async void BrowseSettingsFileButton_Click(object sender, RoutedEventArgs e)
@@ -420,12 +468,12 @@ public sealed class MainWindow : Window
         });
     }
 
-    private void StopRunningProcess(bool silent)
+    private void StopRunningProcess(bool silent, bool killProcessTree = true)
     {
         if (_batchRvtProcess is null)
             return;
 
-        var stopResult = _runService.Stop(_batchRvtProcess, killProcessTree: true);
+        var stopResult = _runService.Stop(_batchRvtProcess, killProcessTree: killProcessTree);
         if (!stopResult.Succeeded && !silent)
         {
             AppendOutputLine("[ERROR] Failed to stop batch process: " + stopResult.Exception?.Message);
@@ -591,4 +639,13 @@ public sealed class MainWindow : Window
         InitializeWithWindow.Initialize(picker, windowHandle);
         return picker;
     }
+
+    private int ShowMessageBox(string message, uint options)
+    {
+        var windowHandle = WindowNative.GetWindowHandle(this);
+        return MessageBox(windowHandle, message, BatchUiPreflight.WindowTitle, options);
+    }
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern int MessageBox(IntPtr hWnd, string lpText, string lpCaption, uint uType);
 }

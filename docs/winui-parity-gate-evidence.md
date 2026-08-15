@@ -31,6 +31,7 @@ Additional parity completion in this pass:
 
 - Startup preflight parity (B1) is now implemented in both WinForms and WinUI via shared helper: [src/shared/Batch.Shared.Util/BatchUiPreflight.cs](src/shared/Batch.Shared.Util/BatchUiPreflight.cs#L6), [src/apps/Batch.App.Gui/Program.cs](src/apps/Batch.App.Gui/Program.cs#L38), [src/apps/Batch.App.Ui/App.xaml.cs](src/apps/Batch.App.Ui/App.xaml.cs#L18).
 - Run-state signaling parity (V8) is now implemented in WinUI with explicit state transitions and Running/Done semantics: [src/apps/Batch.App.Ui/MainWindow.xaml.cs](src/apps/Batch.App.Ui/MainWindow.xaml.cs#L20), [src/apps/Batch.App.Ui/MainWindow.xaml.cs](src/apps/Batch.App.Ui/MainWindow.xaml.cs#L540).
+- Stop-flow parity (V5) is now implemented in WinUI with close-time terminate/no/cancel prompts and save-default follow-up matching WinForms behavior: [src/apps/Batch.App.Ui/MainWindow.xaml.cs](src/apps/Batch.App.Ui/MainWindow.xaml.cs#L280), [src/apps/Batch.App.Ui/MainWindow.xaml.cs](src/apps/Batch.App.Ui/MainWindow.xaml.cs#L310), [src/apps/Batch.App.Gui/BatchRvtGuiForm.cs](src/apps/Batch.App.Gui/BatchRvtGuiForm.cs#L443).
 
 ## Scenario results
 
@@ -39,7 +40,7 @@ Additional parity completion in this pass:
 | 1. Load default settings and save without schema drift | PASS (service-level) | PASS (service-level) | [tests/Batch.Shared.Util.Tests/BatchRvtTests.cs](tests/Batch.Shared.Util.Tests/BatchRvtTests.cs#L269) validates save/load of settings JSON via shared workflow seam used by both UIs. |
 | 2. Modify task script/file list, save-as, reload, compare JSON outcomes | PASS (service-level) | PASS (service-level) | [tests/Batch.Shared.Util.Tests/BatchRvtTests.cs](tests/Batch.Shared.Util.Tests/BatchRvtTests.cs#L298) exercises WinForms-style model save and WinUI-style JSON save through shared seam. |
 | 3. Start batch run with valid settings and compare launch/status/completion | PARTIAL | PARTIAL | UI binary smoke launch evidence captured for both app outputs; full interactive run-status comparison is blocked by no UI automation and no Revit-hosted end-to-end execution in this session. |
-| 4. Start run and stop mid-run; compare termination and feedback | PASS (process stop policy), PARTIAL (UI feedback) | PASS (process stop policy), PARTIAL (UI feedback) | [tests/Batch.Shared.Util.Tests/BatchRvtTests.cs](tests/Batch.Shared.Util.Tests/BatchRvtTests.cs#L458) verifies shared stop service terminates a running process. UI feedback comparison remains interactive/manual. |
+| 4. Start run and stop mid-run; compare termination and feedback | PASS (process stop policy), PARTIAL (interactive capture) | PASS (process stop policy), PARTIAL (interactive capture) | [tests/Batch.Shared.Util.Tests/BatchRvtTests.cs](tests/Batch.Shared.Util.Tests/BatchRvtTests.cs#L458) verifies shared stop service termination; UI close-time parity logic is now aligned in code at [src/apps/Batch.App.Ui/MainWindow.xaml.cs](src/apps/Batch.App.Ui/MainWindow.xaml.cs#L280) and [src/apps/Batch.App.Gui/BatchRvtGuiForm.cs](src/apps/Batch.App.Gui/BatchRvtGuiForm.cs#L443). |
 | 5. Output filtering/status behavior with stdout/stderr noise | PASS | PASS | [tests/Batch.Shared.Util.Tests/BatchRvtTests.cs](tests/Batch.Shared.Util.Tests/BatchRvtTests.cs#L410) and [tests/Batch.Shared.Util.Tests/BatchRvtTests.cs](tests/Batch.Shared.Util.Tests/BatchRvtTests.cs#L432) validate shared output policy now consumed by both UIs. |
 
 ## Executable smoke evidence
@@ -93,4 +94,4 @@ WinUI via `dotnet` host smoke output:
 Overall gate status:
 
 - PARTIAL PASS
-- Remaining blockers are interactive end-to-end comparison capture for scenario 3 and UI feedback parity capture for scenario 4 under a Revit-capable, policy-permitted environment.
+- Remaining blockers are interactive end-to-end comparison capture for scenario 3 and scenario 4 under a Revit-capable, policy-permitted environment.
