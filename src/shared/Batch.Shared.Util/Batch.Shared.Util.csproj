@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net48;net10.0-windows</TargetFrameworks>
+    <TargetFrameworks>net48;net8.0-windows;net10.0-windows</TargetFrameworks>
     <OutputType>Library</OutputType>
     <RootNamespace>Batch.Shared.Util</RootNamespace>
     <AssemblyName>Batch.Shared.Util</AssemblyName>
@@ -25,7 +25,7 @@
     </Reference>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows'">
+  <ItemGroup Condition="'$(TargetFramework)' != 'net48'">
     <Reference Include="IronPython">
       <HintPath>$(NuGetPackageRoot)ironpython\3.4.2\lib\net8.0\IronPython.dll</HintPath>
     </Reference>

@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Batch.Shared.ScriptHost.Util;
-#if !NET10_0_OR_GREATER
+#if !NET8_0_OR_GREATER
 using IronPython.Modules;
 #endif
 using MSScripting = Microsoft.Scripting;
@@ -33,13 +33,13 @@ namespace Batch.Shared.ScriptHost;
 
 public static class ScriptUtil
 {
-#if !NET10_0_OR_GREATER
+#if !NET8_0_OR_GREATER
     private const string PYTHON_LIB_ZIP_NAME = "python_27_lib.zip";
 #endif
 
     public static void AddPythonStandardLibrary(ScriptingHosting.ScriptScope scope)
     {
-#if NET10_0_OR_GREATER
+#if NET8_0_OR_GREATER
         // IronPython 3.4 stdlib ships as loose .py files via the IronPython.StdLib NuGet
         // (ContentFiles → deployed to a `lib/` subdir next to this assembly). Add that
         // directory to the engine's search paths.
