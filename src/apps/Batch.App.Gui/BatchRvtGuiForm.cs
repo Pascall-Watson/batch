@@ -393,9 +393,7 @@ public partial class BatchRvtGuiForm : Form
 
         AdjustWindowSizeForDisplaySetting();
 
-        var isLoaded = LoadSettings();
-
-        // TODO: show error message if load failed!!
+        LoadSettings();
     }
 
     private bool LoadSettings(string filePath = null)
@@ -407,6 +405,15 @@ public partial class BatchRvtGuiForm : Form
             Settings = loadResult.Settings;
         else if (loadResult.FileMissing)
             Settings = new BatchRvtSettings();
+        else
+        {
+            var errorMessage = new StringBuilder();
+            errorMessage.AppendLine("ERROR: Failed to load settings.");
+            if (!string.IsNullOrWhiteSpace(loadResult.ErrorMessage))
+                errorMessage.AppendLine(loadResult.ErrorMessage);
+
+            ShowErrorMessageBox(errorMessage.ToString());
+        }
 
         UIConfiguration.UpdateUI();
 
