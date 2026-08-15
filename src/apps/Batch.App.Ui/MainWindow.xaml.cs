@@ -53,6 +53,9 @@ public sealed class MainWindow : Window
     private readonly TextBlock _processingModeValueTextBlock = new();
     private readonly TextBlock _batchRevitVersionValueTextBlock = new();
     private readonly TextBlock _revitSessionModeValueTextBlock = new();
+    private readonly TextBox _taskScriptEditorTextBox = new();
+    private readonly TextBox _revitFileListEditorTextBox = new();
+    private readonly ComboBox _processingModeEditorComboBox = new();
     private readonly TextBox _settingsJsonTextBox = new();
     private readonly TextBox _outputTextBox = new();
     private readonly TextBlock _statusTextBlock = new();
@@ -226,6 +229,98 @@ public sealed class MainWindow : Window
         summaryStack.Children.Add(new TextBlock { Text = "Revit session mode", FontWeight = FontWeights.SemiBold });
         summaryStack.Children.Add(_revitSessionModeValueTextBlock);
 
+        summaryStack.Children.Add(new TextBlock
+        {
+            Text = "Primary Workflow Fields",
+            FontSize = 16,
+            FontWeight = FontWeights.SemiBold,
+            Margin = new Thickness(0, 8, 0, 0)
+        });
+
+        var taskScriptEditorGrid = new Grid { ColumnSpacing = 8 };
+        taskScriptEditorGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(95) });
+        taskScriptEditorGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        taskScriptEditorGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+        var taskScriptEditorLabel = new TextBlock
+        {
+            Text = "Task script",
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        Grid.SetColumn(taskScriptEditorLabel, 0);
+        taskScriptEditorGrid.Children.Add(taskScriptEditorLabel);
+
+        _taskScriptEditorTextBox.PlaceholderText = "Task script path";
+        Grid.SetColumn(_taskScriptEditorTextBox, 1);
+        taskScriptEditorGrid.Children.Add(_taskScriptEditorTextBox);
+
+        var browseTaskScriptButton = new Button
+        {
+            Content = "Browse",
+            Margin = new Thickness(8, 0, 0, 0)
+        };
+        browseTaskScriptButton.Click += BrowseTaskScriptButton_Click;
+        Grid.SetColumn(browseTaskScriptButton, 2);
+        taskScriptEditorGrid.Children.Add(browseTaskScriptButton);
+
+        summaryStack.Children.Add(taskScriptEditorGrid);
+
+        var revitFileListEditorGrid = new Grid { ColumnSpacing = 8 };
+        revitFileListEditorGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(95) });
+        revitFileListEditorGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        revitFileListEditorGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+        var revitFileListEditorLabel = new TextBlock
+        {
+            Text = "Revit list",
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        Grid.SetColumn(revitFileListEditorLabel, 0);
+        revitFileListEditorGrid.Children.Add(revitFileListEditorLabel);
+
+        _revitFileListEditorTextBox.PlaceholderText = "Revit file list path";
+        Grid.SetColumn(_revitFileListEditorTextBox, 1);
+        revitFileListEditorGrid.Children.Add(_revitFileListEditorTextBox);
+
+        var browseRevitListButton = new Button
+        {
+            Content = "Browse",
+            Margin = new Thickness(8, 0, 0, 0)
+        };
+        browseRevitListButton.Click += BrowseRevitFileListButton_Click;
+        Grid.SetColumn(browseRevitListButton, 2);
+        revitFileListEditorGrid.Children.Add(browseRevitListButton);
+
+        summaryStack.Children.Add(revitFileListEditorGrid);
+
+        var processingModeEditorGrid = new Grid { ColumnSpacing = 8 };
+        processingModeEditorGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(95) });
+        processingModeEditorGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+        var processingModeEditorLabel = new TextBlock
+        {
+            Text = "Mode",
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        Grid.SetColumn(processingModeEditorLabel, 0);
+        processingModeEditorGrid.Children.Add(processingModeEditorLabel);
+
+        _processingModeEditorComboBox.Items.Add(BatchRvt.RevitProcessingOption.BatchRevitFileProcessing);
+        _processingModeEditorComboBox.Items.Add(BatchRvt.RevitProcessingOption.SingleRevitTaskProcessing);
+        Grid.SetColumn(_processingModeEditorComboBox, 1);
+        processingModeEditorGrid.Children.Add(_processingModeEditorComboBox);
+
+        summaryStack.Children.Add(processingModeEditorGrid);
+
+        var applyPrimaryFieldsButton = new Button
+        {
+            Content = "Apply Fields to JSON",
+            HorizontalAlignment = HorizontalAlignment.Left,
+            Margin = new Thickness(0, 2, 0, 0)
+        };
+        applyPrimaryFieldsButton.Click += ApplyPrimaryFieldsButton_Click;
+        summaryStack.Children.Add(applyPrimaryFieldsButton);
+
         summaryStack.Children.Add(new TextBlock { Text = "Settings JSON", FontWeight = FontWeights.SemiBold });
         _settingsJsonTextBox.AcceptsReturn = true;
         _settingsJsonTextBox.TextWrapping = TextWrapping.NoWrap;
@@ -341,6 +436,52 @@ public sealed class MainWindow : Window
 
         _logFolderPathTextBox.Text = selectedFolder.Path;
         SetStatus("Selected log folder path.");
+    }
+
+    private async void BrowseTaskScriptButton_Click(object sender, RoutedEventArgs e)
+    {
+        var picker = InitializePickerWithWindow(new FileOpenPicker());
+        picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+        picker.FileTypeFilter.Add(".py");
+        picker.FileTypeFilter.Add(".dyn");
+        picker.FileTypeFilter.Add("*");
+
+        var selectedFile = await picker.PickSingleFileAsync();
+        if (selectedFile == null)
+            return;
+
+        _taskScriptEditorTextBox.Text = selectedFile.Path;
+        SetStatus("Selected task script file path.");
+    }
+
+    private async void BrowseRevitFileListButton_Click(object sender, RoutedEventArgs e)
+    {
+        var picker = InitializePickerWithWindow(new FileOpenPicker());
+        picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+        picker.FileTypeFilter.Add(".txt");
+        picker.FileTypeFilter.Add(".csv");
+        picker.FileTypeFilter.Add(".xls");
+        picker.FileTypeFilter.Add(".xlsx");
+        picker.FileTypeFilter.Add("*");
+
+        var selectedFile = await picker.PickSingleFileAsync();
+        if (selectedFile == null)
+            return;
+
+        _revitFileListEditorTextBox.Text = selectedFile.Path;
+        SetStatus("Selected Revit file list path.");
+    }
+
+    private void ApplyPrimaryFieldsButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!TryApplyPrimaryWorkflowFieldsToSettingsJson(out var errorMessage))
+        {
+            AppendOutputLine("[ERROR] Failed to apply primary workflow fields: " + errorMessage);
+            SetStatus("Failed to apply primary workflow fields.");
+            return;
+        }
+
+        SetStatus("Primary workflow fields applied to settings JSON.");
     }
 
     private void LoadSettingsButton_Click(object sender, RoutedEventArgs e)
@@ -531,6 +672,13 @@ public sealed class MainWindow : Window
 
     private bool SaveCurrentSettings()
     {
+        if (!TryApplyPrimaryWorkflowFieldsToSettingsJson(out var applyErrorMessage))
+        {
+            AppendOutputLine("[ERROR] Failed to apply primary workflow fields: " + applyErrorMessage);
+            SetStatus("Settings save failed.");
+            return false;
+        }
+
         var saveResult = _settingsWorkflowService.SaveSettingsJson(_settingsJsonTextBox.Text, _settingsFilePath);
         if (!saveResult.Succeeded)
         {
@@ -554,6 +702,7 @@ public sealed class MainWindow : Window
         _processingModeValueTextBlock.Text = _settings.RevitProcessingOption.GetValue().ToString();
         _batchRevitVersionValueTextBlock.Text = _settings.BatchRevitTaskRevitVersion.GetValue().ToString();
         _revitSessionModeValueTextBlock.Text = _settings.RevitSessionOption.GetValue().ToString();
+        UpdatePrimaryWorkflowEditors();
     }
 
     private void SetSummaryInvalid(string value)
@@ -563,6 +712,66 @@ public sealed class MainWindow : Window
         _processingModeValueTextBlock.Text = value;
         _batchRevitVersionValueTextBlock.Text = value;
         _revitSessionModeValueTextBlock.Text = value;
+    }
+
+    private void UpdatePrimaryWorkflowEditors()
+    {
+        _taskScriptEditorTextBox.Text = _settings.TaskScriptFilePath.GetValue() ?? string.Empty;
+        _revitFileListEditorTextBox.Text = _settings.RevitFileListFilePath.GetValue() ?? string.Empty;
+        _processingModeEditorComboBox.SelectedItem = _settings.RevitProcessingOption.GetValue();
+    }
+
+    private bool TryApplyPrimaryWorkflowFieldsToSettingsJson(out string errorMessage)
+    {
+        errorMessage = string.Empty;
+        var tempSettingsFilePath = Path.GetTempFileName();
+
+        try
+        {
+            var loadFromJsonResult = _settingsWorkflowService.SaveSettingsJson(_settingsJsonTextBox.Text, tempSettingsFilePath);
+            if (!loadFromJsonResult.Succeeded || loadFromJsonResult.Settings == null)
+            {
+                errorMessage = loadFromJsonResult.ErrorMessage ?? "Could not parse settings JSON.";
+                return false;
+            }
+
+            var settings = loadFromJsonResult.Settings;
+
+            settings.TaskScriptFilePath.SetValue(NormalizePathOrEmpty(_taskScriptEditorTextBox.Text));
+            settings.RevitFileListFilePath.SetValue(NormalizePathOrEmpty(_revitFileListEditorTextBox.Text));
+
+            if (_processingModeEditorComboBox.SelectedItem is BatchRvt.RevitProcessingOption processingOption)
+                settings.RevitProcessingOption.SetValue(processingOption);
+
+            var mergedSaveResult = _settingsWorkflowService.SaveSettings(settings, tempSettingsFilePath);
+            if (!mergedSaveResult.Succeeded || mergedSaveResult.Settings == null)
+            {
+                errorMessage = mergedSaveResult.ErrorMessage ?? "Failed to merge primary workflow fields into settings JSON.";
+                return false;
+            }
+
+            _settingsJsonTextBox.Text = mergedSaveResult.SettingsJson ?? "{}";
+            _settings = mergedSaveResult.Settings;
+            UpdateSummaryFromSettings();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+            return false;
+        }
+        finally
+        {
+            try
+            {
+                if (File.Exists(tempSettingsFilePath))
+                    File.Delete(tempSettingsFilePath);
+            }
+            catch
+            {
+                // Best-effort cleanup only.
+            }
+        }
     }
 
     private void AppendOutputLine(string line)
