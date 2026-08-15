@@ -12,6 +12,7 @@ Environment constraints observed:
 - Corporate AppLocker blocked direct launch of [src/apps/Batch.App.Ui/bin/x64/Release/net10.0-windows10.0.19041.0/Batch.App.Ui.exe](src/apps/Batch.App.Ui/bin/x64/Release/net10.0-windows10.0.19041.0/Batch.App.Ui.exe).
 - WinUI smoke execution was performed via `dotnet` host against the built `.dll`.
 - Full interactive UI automation (click/edit/start/stop status capture) was not available in this terminal-only run.
+- Interactive parity capture process is documented in [docs/winui-parity-interactive-runbook.md](docs/winui-parity-interactive-runbook.md), with evidence recording template at [docs/winui-parity-interactive-capture-template.md](docs/winui-parity-interactive-capture-template.md).
 
 ## Build and test baseline
 
@@ -96,4 +97,4 @@ WinUI via `dotnet` host smoke output:
 Overall gate status:
 
 - PARTIAL PASS
-- Remaining blockers are interactive end-to-end comparison capture for scenario 3 and scenario 4 under a Revit-capable, policy-permitted environment.
+- Remaining blockers are interactive end-to-end comparison capture for scenario 3 and scenario 4 under a Revit-capable, policy-permitted environment using [docs/winui-parity-interactive-runbook.md](docs/winui-parity-interactive-runbook.md).
