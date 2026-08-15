@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.Json;
+using Batch.Shared.Util;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Text;
@@ -18,8 +18,6 @@ namespace Batch.App.Ui;
 
 public sealed class MainWindow : Window
 {
-    private const string DEFAULT_SETTINGS_FILENAME = "BatchRvtGui.Settings.json";
-
     private readonly StringBuilder _outputBuilder = new();
 
     private readonly TextBox _settingsPathTextBox = new();
@@ -35,9 +33,9 @@ public sealed class MainWindow : Window
     private readonly TextBox _outputTextBox = new();
     private readonly TextBlock _statusTextBlock = new();
 
+    private BatchRvtSettings _settings = new();
     private Process? _batchRvtProcess;
-    private string _settingsFilePath = GetDefaultSettingsFilePath();
-    private bool _showRevitProcessErrorMessages;
+    private string _settingsFilePath = BatchRvtSettings.GetDefaultSettingsFilePath();
 
     public MainWindow()
     {
@@ -253,14 +251,6 @@ public sealed class MainWindow : Window
         return rootGrid;
     }
 
-    private static string GetDefaultSettingsFilePath()
-    {
-        return Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "BatchRvt",
-            DEFAULT_SETTINGS_FILENAME);
-    }
-
     private void MainWindow_Closed(object sender, WindowEventArgs args)
     {
         StopRunningProcess(silent: true);
@@ -315,7 +305,7 @@ public sealed class MainWindow : Window
         var picker = InitializePickerWithWindow(new FileSavePicker());
         picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
         picker.SuggestedFileName = string.IsNullOrWhiteSpace(_settingsFilePath)
-            ? DEFAULT_SETTINGS_FILENAME
+            ? BatchRvtSettings.BATCHRVT_SETTINGS_FILENAME
             : Path.GetFileName(_settingsFilePath);
         picker.FileTypeChoices.Add("JSON files", new List<string> { ".json" });
 
@@ -347,37 +337,12 @@ public sealed class MainWindow : Window
         if (!string.IsNullOrWhiteSpace(logFolderPath))
             Directory.CreateDirectory(logFolderPath);
 
-        var executablePath = ResolveBatchExecutablePath(out var checkedPaths);
-        if (string.IsNullOrWhiteSpace(executablePath))
-        {
-            AppendOutputLine("[ERROR] Could not find Batch launcher executable.");
-            foreach (var checkedPath in checkedPaths)
-                AppendOutputLine("Checked: " + checkedPath);
-            SetStatus("Batch launcher executable was not found.");
-            return;
-        }
-
-        var arguments = new StringBuilder();
-        arguments.Append("--settings_file ").Append(QuoteArgument(_settingsFilePath));
-        if (!string.IsNullOrWhiteSpace(logFolderPath))
-            arguments.Append(" --log_folder ").Append(QuoteArgument(logFolderPath));
-
         try
         {
-            var psi = new ProcessStartInfo(executablePath)
-            {
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                RedirectStandardInput = false,
-                CreateNoWindow = true,
-                Arguments = arguments.ToString(),
-                WorkingDirectory = Path.GetDirectoryName(executablePath) ?? AppContext.BaseDirectory
-            };
-
-            _batchRvtProcess = Process.Start(psi);
-            if (_batchRvtProcess == null)
-                throw new InvalidOperationException("Process start returned null.");
+            _batchRvtProcess = BatchRvt.StartBatchRvt(
+                _settingsFilePath,
+                string.IsNullOrWhiteSpace(logFolderPath) ? null : logFolderPath
+            );
         }
         catch (Exception ex)
         {
@@ -411,7 +376,7 @@ public sealed class MainWindow : Window
             return;
 
         var line = e.Data;
-        if (IsBatchRvtLine(line))
+        if (BatchRvt.IsBatchRvtLine(line))
         {
             AppendOutputLine(line);
             return;
@@ -429,7 +394,7 @@ public sealed class MainWindow : Window
         if (e.Data.StartsWith("log4cplus:", StringComparison.OrdinalIgnoreCase))
             return;
 
-        if (!_showRevitProcessErrorMessages)
+        if (!_settings.ShowRevitProcessErrorMessages.GetValue())
             return;
 
         AppendOutputLine("[ REVIT ERROR MESSAGE ] : " + e.Data);
@@ -490,24 +455,39 @@ public sealed class MainWindow : Window
     {
         if (!File.Exists(_settingsFilePath))
         {
+            _settings = new BatchRvtSettings();
             _settingsJsonTextBox.Text = "{}";
-            UpdateSummaryFromJson(_settingsJsonTextBox.Text);
+            UpdateSummaryFromSettings();
             SetStatus("Settings file was not found. Loaded an empty JSON document.");
             return;
         }
 
+        string settingsJson;
         try
         {
-            var settingsJson = File.ReadAllText(_settingsFilePath);
+            settingsJson = File.ReadAllText(_settingsFilePath);
             _settingsJsonTextBox.Text = settingsJson;
-            UpdateSummaryFromJson(settingsJson);
-            SetStatus("Settings loaded.");
         }
         catch (Exception ex)
         {
-            AppendOutputLine("[ERROR] Failed to load settings: " + ex.Message);
+            AppendOutputLine("[ERROR] Failed to read settings file: " + ex.Message);
             SetStatus("Settings load failed.");
+            return;
         }
+
+        var candidate = new BatchRvtSettings();
+        if (!candidate.LoadFromFile(_settingsFilePath))
+        {
+            var errorMessage = candidate.LastLoadException?.Message ?? "Could not parse settings file.";
+            AppendOutputLine("[ERROR] Failed to load settings: " + errorMessage);
+            SetSummaryInvalid("(invalid settings)");
+            SetStatus("Settings load failed.");
+            return;
+        }
+
+        _settings = candidate;
+        UpdateSummaryFromSettings();
+        SetStatus("Settings loaded.");
     }
 
     private void SaveCurrentSettings()
@@ -525,77 +505,45 @@ public sealed class MainWindow : Window
                 Directory.CreateDirectory(directoryPath);
 
             File.WriteAllText(_settingsFilePath, settingsJson);
-            UpdateSummaryFromJson(settingsJson);
-            SetStatus("Settings saved.");
         }
         catch (Exception ex)
         {
             AppendOutputLine("[ERROR] Failed to save settings: " + ex.Message);
             SetStatus("Settings save failed.");
+            return;
         }
-    }
 
-    private void UpdateSummaryFromJson(string settingsJson)
-    {
-        try
+        var candidate = new BatchRvtSettings();
+        if (!candidate.LoadFromFile(_settingsFilePath))
         {
-            using var document = JsonDocument.Parse(settingsJson);
-            var root = document.RootElement;
-
-            _taskScriptValueTextBlock.Text = DisplayValueOrDefault(ReadJsonString(root, "taskScriptFilePath"));
-            _revitFileListValueTextBlock.Text = DisplayValueOrDefault(ReadJsonString(root, "revitFileListFilePath"));
-            _processingModeValueTextBlock.Text = DisplayValueOrDefault(ReadJsonString(root, "revitProcessingOption"));
-            _batchRevitVersionValueTextBlock.Text = DisplayValueOrDefault(ReadJsonString(root, "batchRevitTaskRevitVersion"));
-            _revitSessionModeValueTextBlock.Text = DisplayValueOrDefault(ReadJsonString(root, "revitSessionOption"));
-
-            _showRevitProcessErrorMessages = ReadJsonBoolean(root, "showRevitProcessErrorMessages");
+            var errorMessage = candidate.LastLoadException?.Message ?? "Saved file could not be parsed.";
+            AppendOutputLine("[ERROR] Settings were saved but could not be loaded: " + errorMessage);
+            SetSummaryInvalid("(invalid settings)");
+            SetStatus("Settings saved but model load failed.");
+            return;
         }
-        catch
-        {
-            _taskScriptValueTextBlock.Text = "(invalid json)";
-            _revitFileListValueTextBlock.Text = "(invalid json)";
-            _processingModeValueTextBlock.Text = "(invalid json)";
-            _batchRevitVersionValueTextBlock.Text = "(invalid json)";
-            _revitSessionModeValueTextBlock.Text = "(invalid json)";
-            _showRevitProcessErrorMessages = false;
-        }
+
+        _settings = candidate;
+        UpdateSummaryFromSettings();
+        SetStatus("Settings saved.");
     }
 
-    private static string ReadJsonString(JsonElement root, string propertyName)
+    private void UpdateSummaryFromSettings()
     {
-        if (root.ValueKind != JsonValueKind.Object)
-            return string.Empty;
-
-        if (!root.TryGetProperty(propertyName, out var value))
-            return string.Empty;
-
-        if (value.ValueKind == JsonValueKind.String)
-            return value.GetString() ?? string.Empty;
-
-        if (value.ValueKind == JsonValueKind.Null)
-            return string.Empty;
-
-        return value.ToString();
+        _taskScriptValueTextBlock.Text = DisplayValueOrDefault(_settings.TaskScriptFilePath.GetValue());
+        _revitFileListValueTextBlock.Text = DisplayValueOrDefault(_settings.RevitFileListFilePath.GetValue());
+        _processingModeValueTextBlock.Text = _settings.RevitProcessingOption.GetValue().ToString();
+        _batchRevitVersionValueTextBlock.Text = _settings.BatchRevitTaskRevitVersion.GetValue().ToString();
+        _revitSessionModeValueTextBlock.Text = _settings.RevitSessionOption.GetValue().ToString();
     }
 
-    private static bool ReadJsonBoolean(JsonElement root, string propertyName)
+    private void SetSummaryInvalid(string value)
     {
-        if (root.ValueKind != JsonValueKind.Object)
-            return false;
-
-        if (!root.TryGetProperty(propertyName, out var value))
-            return false;
-
-        if (value.ValueKind == JsonValueKind.True)
-            return true;
-
-        if (value.ValueKind == JsonValueKind.False)
-            return false;
-
-        if (value.ValueKind == JsonValueKind.String && bool.TryParse(value.GetString(), out var parsed))
-            return parsed;
-
-        return false;
+        _taskScriptValueTextBlock.Text = value;
+        _revitFileListValueTextBlock.Text = value;
+        _processingModeValueTextBlock.Text = value;
+        _batchRevitVersionValueTextBlock.Text = value;
+        _revitSessionModeValueTextBlock.Text = value;
     }
 
     private void AppendOutputLine(string line)
@@ -635,48 +583,11 @@ public sealed class MainWindow : Window
         }
     }
 
-    private static string QuoteArgument(string argument)
-    {
-        return "\"" + argument.Replace("\"", "\\\"") + "\"";
-    }
-
-    private static bool IsBatchRvtLine(string line)
-    {
-        if (string.IsNullOrWhiteSpace(line))
-            return false;
-
-        var parts = line.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length == 0)
-            return false;
-
-        return TimeSpan.TryParseExact(parts[0], @"hh\:mm\:ss", CultureInfo.InvariantCulture, out _);
-    }
-
-    private static string ResolveBatchExecutablePath(out string[] checkedPaths)
-    {
-        var baseDirectory = AppContext.BaseDirectory;
-        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-
-        checkedPaths = new[]
-        {
-            Path.Combine(baseDirectory, "Batch.App.Cli.exe"),
-            Path.Combine(baseDirectory, "BatchRvt.exe"),
-            Path.Combine(localAppData, "RevitBatchProcessor", "Batch.App.Cli.exe"),
-            Path.Combine(localAppData, "RevitBatchProcessor", "BatchRvt.exe")
-        };
-
-        foreach (var checkedPath in checkedPaths)
-            if (File.Exists(checkedPath))
-                return checkedPath;
-
-        return string.Empty;
-    }
-
     private TPicker InitializePickerWithWindow<TPicker>(TPicker picker)
         where TPicker : class
     {
         var windowHandle = WindowNative.GetWindowHandle(this);
-        WinRT.Interop.InitializeWithWindow.Initialize(picker, windowHandle);
+        InitializeWithWindow.Initialize(picker, windowHandle);
         return picker;
     }
 }
