@@ -72,6 +72,10 @@ public partial class BatchRvtGuiForm : Form
     private readonly Size SETUP_MAXIMUM_SIZE = new(SETUP_MAXIMUM_WIDTH, SETUP_HEIGHT);
     private readonly Size SETUP_MINIMUM_SIZE = new(SETUP_MINIMUM_WIDTH, SETUP_HEIGHT);
     private readonly UIConfig UIConfiguration;
+    private readonly IBatchSettingsWorkflowService settingsWorkflowService;
+    private readonly IBatchRunValidationService runValidationService;
+    private readonly IBatchOutputPolicy outputPolicy;
+    private readonly IBatchRunService runService;
 
     private Process batchRvtProcess;
     private bool isBatchRvtRunning;
@@ -87,6 +91,10 @@ public partial class BatchRvtGuiForm : Form
     {
         InitializeComponent();
         Settings = new BatchRvtSettings();
+        settingsWorkflowService = new BatchSettingsWorkflowService();
+        runValidationService = new BatchRunValidationService();
+        outputPolicy = new BatchOutputPolicy();
+        runService = new BatchRunService();
 
         UIConfiguration = new UIConfig(GetUIConfigItems());
     }
@@ -392,11 +400,13 @@ public partial class BatchRvtGuiForm : Form
 
     private bool LoadSettings(string filePath = null)
     {
-        var newBatchRvtSettings = new BatchRvtSettings();
+        var loadResult = settingsWorkflowService.Load(filePath);
+        var isLoaded = loadResult.Succeeded;
 
-        var isLoaded = newBatchRvtSettings.LoadFromFile(filePath);
-
-        if (isLoaded) Settings = newBatchRvtSettings;
+        if (loadResult.Succeeded)
+            Settings = loadResult.Settings;
+        else if (loadResult.FileMissing)
+            Settings = new BatchRvtSettings();
 
         UIConfiguration.UpdateUI();
 
@@ -421,7 +431,11 @@ public partial class BatchRvtGuiForm : Form
     {
         UIConfiguration.UpdateConfig();
 
-        var isSaved = Settings.SaveToFile(filePath);
+        var saveResult = settingsWorkflowService.SaveSettings(Settings, filePath);
+        var isSaved = saveResult.Succeeded;
+
+        if (isSaved)
+            Settings = saveResult.Settings;
 
         return isSaved;
     }
@@ -446,14 +460,13 @@ public partial class BatchRvtGuiForm : Form
         if (dialogResult == DialogResult.Cancel)
             e.Cancel = true;
         else if (dialogResult == DialogResult.Yes)
-            try
-            {
-                batchRvtProcess.Kill();
-            }
-            catch (Exception)
+        {
+            var stopResult = runService.Stop(batchRvtProcess, killProcessTree: false);
+            if (!stopResult.Succeeded)
             {
                 // TODO: report failure to kill the process?
             }
+        }
         
 
         if (e.Cancel) return;
@@ -499,41 +512,21 @@ public partial class BatchRvtGuiForm : Form
 
     private bool ValidateConfig()
     {
-        var validated = false;
-
         if (!enableSingleRevitTaskProcessingCheckBox.Checked && !enableBatchProcessingCheckBox.Checked)
+        {
             ShowErrorMessageBox(
                 "ERROR: You must select either Batch Revit File Processing or Single Revit Task Processing!");
-        else if (!File.Exists(Settings.TaskScriptFilePath.GetValue()))
-            ShowErrorMessageBox("ERROR: You must select an existing Task script!");
-        else if (
-            Settings.RevitProcessingOption.GetValue() == BatchRvt.RevitProcessingOption.BatchRevitFileProcessing
-            &&
-            !File.Exists(Settings.RevitFileListFilePath.GetValue())
-        )
-            ShowErrorMessageBox("ERROR: You must select an existing Revit File List!");
-        else if (
-            Settings.EnableDataExport.GetValue()
-            &&
-            !Directory.Exists(Settings.DataExportFolderPath.GetValue())
-        )
-            ShowErrorMessageBox("ERROR: You must select an existing Data Export folder!");
-        else if (
-            Settings.ExecutePreProcessingScript.GetValue()
-            &&
-            !File.Exists(Settings.PreProcessingScriptFilePath.GetValue())
-        )
-            ShowErrorMessageBox("ERROR: You must select an existing Pre-Processing Python script!");
-        else if (
-            Settings.ExecutePostProcessingScript.GetValue()
-            &&
-            !File.Exists(Settings.PostProcessingScriptFilePath.GetValue())
-        )
-            ShowErrorMessageBox("ERROR: You must select an existing Post-Processing Python script!");
-        else
-            validated = true;
+            return false;
+        }
 
-        return validated;
+        var validationResult = runValidationService.Validate(Settings);
+        if (!validationResult.IsValid)
+        {
+            ShowErrorMessageBox(validationResult.FirstError ?? "ERROR: Settings validation failed.");
+            return false;
+        }
+
+        return true;
     }
 
     private void startButton_Click(object sender, EventArgs e)
@@ -549,19 +542,18 @@ public partial class BatchRvtGuiForm : Form
 
         var settingsFilePath = BatchRvtSettings.GetDefaultSettingsFilePath();
 
-        try
-        {
-            batchRvtProcess = BatchRvt.StartBatchRvt(settingsFilePath);
-        }
-        catch (Exception ex)
+        var startResult = runService.Start(settingsFilePath);
+        if (!startResult.Succeeded || startResult.Process == null)
         {
             var errorMessage = new StringBuilder();
             errorMessage.AppendLine("ERROR: Failed to start the BatchRvt process.");
             errorMessage.AppendLine();
-            errorMessage.AppendLine(ex.Message);
+            errorMessage.AppendLine(startResult.Exception?.Message);
             ShowErrorMessageBox(errorMessage.ToString());
             return;
         }
+
+        batchRvtProcess = startResult.Process;
 
         readBatchRvtOutput_Timer = new Timer { Interval = READ_OUTPUT_INTERVAL_IN_MS };
         readBatchRvtOutput_Timer.Tick += readBatchRvtOutput_Timer_Tick;
@@ -592,17 +584,8 @@ public partial class BatchRvtGuiForm : Form
 
         foreach (var line in lines)
         {
-            var fullLine = line + Environment.NewLine;
-
-            if (!BatchRvt.IsBatchRvtLine(line))
-            {
-                var timestamp = DateTime.Now.ToString("HH:mm:ss");
-
-                fullLine = timestamp + " : [ REVIT MESSAGE ] : " + fullLine;
-            }
-
-            if (BatchRvt.IsBatchRvtLine(line)) // Do not show non-BatchRvt-related output. (TODO: reconsider?)
-                batchRvtOutputTextBox.AppendText(fullLine);
+            if (outputPolicy.TryFormatStandardOutput(line, out var formattedLine))
+                batchRvtOutputTextBox.AppendText(formattedLine + Environment.NewLine);
         }
 
         linesAndPendingTask =
@@ -610,9 +593,12 @@ public partial class BatchRvtGuiForm : Form
         pendingErrorReadLineTask = linesAndPendingTask.Item2;
         lines = linesAndPendingTask.Item1;
 
-        foreach (var line in lines.Where(line => !line.StartsWith("log4cplus:"))
-                     .Where(line => Settings.ShowRevitProcessErrorMessages.GetValue()))
-            batchRvtOutputTextBox.AppendText("[ REVIT ERROR MESSAGE ] : " + line + Environment.NewLine);
+        foreach (var line in lines)
+            if (outputPolicy.TryFormatStandardError(
+                line,
+                Settings.ShowRevitProcessErrorMessages.GetValue(),
+                out var formattedLine))
+            batchRvtOutputTextBox.AppendText(formattedLine + Environment.NewLine);
 
         if (!isBatchRvtRunning) return;
         batchRvtProcess.Refresh();

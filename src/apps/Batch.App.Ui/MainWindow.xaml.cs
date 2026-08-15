@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using System.Text.Json;
 using Batch.Shared.Util;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
@@ -19,6 +18,10 @@ namespace Batch.App.Ui;
 public sealed class MainWindow : Window
 {
     private readonly StringBuilder _outputBuilder = new();
+    private readonly IBatchSettingsWorkflowService _settingsWorkflowService = new BatchSettingsWorkflowService();
+    private readonly IBatchRunValidationService _runValidationService = new BatchRunValidationService();
+    private readonly IBatchOutputPolicy _outputPolicy = new BatchOutputPolicy();
+    private readonly IBatchRunService _runService = new BatchRunService();
 
     private readonly TextBox _settingsPathTextBox = new();
     private readonly TextBox _logFolderPathTextBox = new();
@@ -327,9 +330,16 @@ public sealed class MainWindow : Window
         if (!TryApplySettingsPath())
             return;
 
-        if (!File.Exists(_settingsFilePath))
+        // Persist editor changes before validating and launching, mirroring WinForms save-then-run flow.
+        if (!SaveCurrentSettings())
+            return;
+
+        var validationResult = _runValidationService.Validate(_settings);
+        if (!validationResult.IsValid)
         {
-            SetStatus("Cannot start batch run. Settings file does not exist.");
+            var validationMessage = validationResult.FirstError ?? "Settings validation failed.";
+            AppendOutputLine(validationMessage);
+            SetStatus("Cannot start batch run. Settings validation failed.");
             return;
         }
 
@@ -337,20 +347,21 @@ public sealed class MainWindow : Window
         if (!string.IsNullOrWhiteSpace(logFolderPath))
             Directory.CreateDirectory(logFolderPath);
 
-        try
-        {
-            _batchRvtProcess = BatchRvt.StartBatchRvt(
-                _settingsFilePath,
-                string.IsNullOrWhiteSpace(logFolderPath) ? null : logFolderPath
-            );
-        }
-        catch (Exception ex)
+        var startResult = _runService.Start(
+            _settingsFilePath,
+            string.IsNullOrWhiteSpace(logFolderPath) ? null : logFolderPath
+        );
+
+        if (!startResult.Succeeded || startResult.Process == null)
         {
             AppendOutputLine("[ERROR] Failed to start batch process.");
-            AppendOutputLine(ex.Message);
+            if (!string.IsNullOrWhiteSpace(startResult.Exception?.Message))
+                AppendOutputLine(startResult.Exception.Message);
             SetStatus("Failed to start batch process.");
             return;
         }
+
+        _batchRvtProcess = startResult.Process;
 
         _batchRvtProcess.EnableRaisingEvents = true;
         _batchRvtProcess.Exited += BatchRvtProcess_Exited;
@@ -372,32 +383,23 @@ public sealed class MainWindow : Window
 
     private void BatchRvtProcess_OutputDataReceived(object sender, DataReceivedEventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(e.Data))
+        if (!_outputPolicy.TryFormatStandardOutput(e.Data, out var formattedLine))
             return;
 
-        var line = e.Data;
-        if (BatchRvt.IsBatchRvtLine(line))
-        {
-            AppendOutputLine(line);
-            return;
-        }
-
-        var stampedLine = DateTime.Now.ToString("HH:mm:ss") + " : [ REVIT MESSAGE ] : " + line;
-        AppendOutputLine(stampedLine);
+        AppendOutputLine(formattedLine);
     }
 
     private void BatchRvtProcess_ErrorDataReceived(object sender, DataReceivedEventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(e.Data))
+        if (!_outputPolicy.TryFormatStandardError(
+                e.Data,
+                _settings.ShowRevitProcessErrorMessages.GetValue(),
+                out var formattedLine))
+        {
             return;
+        }
 
-        if (e.Data.StartsWith("log4cplus:", StringComparison.OrdinalIgnoreCase))
-            return;
-
-        if (!_settings.ShowRevitProcessErrorMessages.GetValue())
-            return;
-
-        AppendOutputLine("[ REVIT ERROR MESSAGE ] : " + e.Data);
+        AppendOutputLine(formattedLine);
     }
 
     private void BatchRvtProcess_Exited(object? sender, EventArgs e)
@@ -416,21 +418,14 @@ public sealed class MainWindow : Window
         if (_batchRvtProcess is null)
             return;
 
-        try
+        var stopResult = _runService.Stop(_batchRvtProcess, killProcessTree: true);
+        if (!stopResult.Succeeded && !silent)
         {
-            if (!_batchRvtProcess.HasExited)
-                _batchRvtProcess.Kill(true);
+            AppendOutputLine("[ERROR] Failed to stop batch process: " + stopResult.Exception?.Message);
         }
-        catch (Exception ex)
-        {
-            if (!silent)
-                AppendOutputLine("[ERROR] Failed to stop batch process: " + ex.Message);
-        }
-        finally
-        {
-            _startButton.IsEnabled = true;
-            _stopButton.IsEnabled = false;
-        }
+
+        _startButton.IsEnabled = true;
+        _stopButton.IsEnabled = false;
 
         if (!silent)
             SetStatus("Batch process stop requested.");
@@ -453,7 +448,9 @@ public sealed class MainWindow : Window
 
     private void LoadCurrentSettings()
     {
-        if (!File.Exists(_settingsFilePath))
+        var loadResult = _settingsWorkflowService.Load(_settingsFilePath);
+
+        if (loadResult.FileMissing)
         {
             _settings = new BatchRvtSettings();
             _settingsJsonTextBox.Text = "{}";
@@ -462,70 +459,37 @@ public sealed class MainWindow : Window
             return;
         }
 
-        string settingsJson;
-        try
+        if (!loadResult.Succeeded)
         {
-            settingsJson = File.ReadAllText(_settingsFilePath);
-            _settingsJsonTextBox.Text = settingsJson;
-        }
-        catch (Exception ex)
-        {
-            AppendOutputLine("[ERROR] Failed to read settings file: " + ex.Message);
-            SetStatus("Settings load failed.");
-            return;
-        }
-
-        var candidate = new BatchRvtSettings();
-        if (!candidate.LoadFromFile(_settingsFilePath))
-        {
-            var errorMessage = candidate.LastLoadException?.Message ?? "Could not parse settings file.";
+            var errorMessage = loadResult.ErrorMessage ?? "Could not parse settings file.";
             AppendOutputLine("[ERROR] Failed to load settings: " + errorMessage);
             SetSummaryInvalid("(invalid settings)");
             SetStatus("Settings load failed.");
             return;
         }
 
-        _settings = candidate;
+        _settingsJsonTextBox.Text = loadResult.SettingsJson;
+        _settings = loadResult.Settings;
         UpdateSummaryFromSettings();
         SetStatus("Settings loaded.");
     }
 
-    private void SaveCurrentSettings()
+    private bool SaveCurrentSettings()
     {
-        var settingsJson = _settingsJsonTextBox.Text;
-        if (string.IsNullOrWhiteSpace(settingsJson))
-            settingsJson = "{}";
-
-        try
+        var saveResult = _settingsWorkflowService.SaveSettingsJson(_settingsJsonTextBox.Text, _settingsFilePath);
+        if (!saveResult.Succeeded)
         {
-            using var _ = JsonDocument.Parse(settingsJson);
-
-            var directoryPath = Path.GetDirectoryName(_settingsFilePath);
-            if (!string.IsNullOrWhiteSpace(directoryPath))
-                Directory.CreateDirectory(directoryPath);
-
-            File.WriteAllText(_settingsFilePath, settingsJson);
-        }
-        catch (Exception ex)
-        {
-            AppendOutputLine("[ERROR] Failed to save settings: " + ex.Message);
-            SetStatus("Settings save failed.");
-            return;
-        }
-
-        var candidate = new BatchRvtSettings();
-        if (!candidate.LoadFromFile(_settingsFilePath))
-        {
-            var errorMessage = candidate.LastLoadException?.Message ?? "Saved file could not be parsed.";
-            AppendOutputLine("[ERROR] Settings were saved but could not be loaded: " + errorMessage);
+            var errorMessage = saveResult.ErrorMessage ?? "Failed to save settings.";
+            AppendOutputLine("[ERROR] Failed to save settings: " + errorMessage);
             SetSummaryInvalid("(invalid settings)");
-            SetStatus("Settings saved but model load failed.");
-            return;
+            SetStatus("Settings save failed.");
+            return false;
         }
 
-        _settings = candidate;
+        _settings = saveResult.Settings;
         UpdateSummaryFromSettings();
         SetStatus("Settings saved.");
+        return true;
     }
 
     private void UpdateSummaryFromSettings()
