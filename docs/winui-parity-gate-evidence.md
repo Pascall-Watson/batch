@@ -13,6 +13,7 @@ Environment constraints observed:
 - WinUI smoke execution was performed via `dotnet` host against the built `.dll`.
 - Full interactive UI automation (click/edit/start/stop status capture) was not available in this terminal-only run.
 - Interactive parity capture process is documented in [docs/winui-parity-interactive-runbook.md](docs/winui-parity-interactive-runbook.md), with evidence recording template at [docs/winui-parity-interactive-capture-template.md](docs/winui-parity-interactive-capture-template.md).
+- Active capture artifact for this branch/session is initialized at [docs/winui-parity-interactive-capture-2026-08-15.md](docs/winui-parity-interactive-capture-2026-08-15.md), generated via [scripts/New-WinUiParityInteractiveCapture.ps1](scripts/New-WinUiParityInteractiveCapture.ps1).
 
 ## Build and test baseline
 

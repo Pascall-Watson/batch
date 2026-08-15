@@ -7,6 +7,16 @@ Purpose:
 - Capture side-by-side interactive parity evidence for scenario 3 and scenario 4 in an environment where both UIs can be executed with Revit-capable inputs.
 - Produce a completed evidence artifact using [docs/winui-parity-interactive-capture-template.md](docs/winui-parity-interactive-capture-template.md).
 
+## 0) Bootstrap Capture Artifact
+
+1. Run the bootstrap script to create a timestamped capture document prefilled with environment metadata:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\New-WinUiParityInteractiveCapture.ps1 -OpenInEditor
+```
+
+2. Use the generated file under [docs](docs) as the working evidence artifact for this run session.
+
 ## 1) Preconditions
 
 1. Revit add-in preflight passes for both apps.
