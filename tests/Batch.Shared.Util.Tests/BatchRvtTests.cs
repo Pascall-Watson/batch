@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -266,6 +267,211 @@ namespace Batch.Shared.Util.Tests
             {
                 Directory.Delete(tempDirectoryPath, true);
             }
+        }
+
+        [Fact]
+        public void BatchSettingsWorkflowService_ShouldSaveAndLoadSettingsJson()
+        {
+            var tempDirectoryPath = CreateTempDirectory();
+
+            try
+            {
+                var settingsFilePath = Path.Combine(tempDirectoryPath, "BatchRvt.Settings.json");
+                var service = new BatchSettingsWorkflowService();
+
+                var saveResult = service.SaveSettingsJson("{}", settingsFilePath);
+                Assert.True(saveResult.Succeeded);
+                Assert.True(File.Exists(settingsFilePath));
+
+                var loadResult = service.Load(settingsFilePath);
+                Assert.True(loadResult.Succeeded);
+                Assert.NotNull(loadResult.Settings);
+                Assert.NotNull(loadResult.Summary);
+            }
+            finally
+            {
+                Directory.Delete(tempDirectoryPath, true);
+            }
+        }
+
+        [Fact]
+        public void BatchSettingsWorkflowService_ShouldSupportWinFormsAndWinUIStyleSaveFlows()
+        {
+            var tempDirectoryPath = CreateTempDirectory();
+
+            try
+            {
+                var scriptPathA = Path.Combine(tempDirectoryPath, "task-A.py");
+                var listPathA = Path.Combine(tempDirectoryPath, "list-A.txt");
+                var scriptPathB = Path.Combine(tempDirectoryPath, "task-B.py");
+                var listPathB = Path.Combine(tempDirectoryPath, "list-B.txt");
+                File.WriteAllText(scriptPathA, "# A");
+                File.WriteAllText(listPathA, "C:/Models/A.rvt");
+                File.WriteAllText(scriptPathB, "# B");
+                File.WriteAllText(listPathB, "C:/Models/B.rvt");
+
+                var settingsFilePathA = Path.Combine(tempDirectoryPath, "A.BatchRvt.Settings.json");
+                var settingsFilePathB = Path.Combine(tempDirectoryPath, "B.BatchRvt.Settings.json");
+
+                var service = new BatchSettingsWorkflowService();
+
+                // WinForms-style save from model.
+                var settings = new BatchRvtSettings();
+                settings.TaskScriptFilePath.SetValue(scriptPathA);
+                settings.RevitProcessingOption.SetValue(BatchRvt.RevitProcessingOption.BatchRevitFileProcessing);
+                settings.RevitFileListFilePath.SetValue(listPathA);
+                var saveModelResult = service.SaveSettings(settings, settingsFilePathA);
+                Assert.True(saveModelResult.Succeeded);
+
+                // WinUI-style save from editable JSON text.
+                var uiJson =
+                    "{\"taskScriptFilePath\":\"" + scriptPathB.Replace("\\", "\\\\") + "\","
+                    + "\"revitProcessingOption\":\"BatchRevitFileProcessing\","
+                    + "\"revitFileListFilePath\":\"" + listPathB.Replace("\\", "\\\\") + "\"}";
+                var saveJsonResult = service.SaveSettingsJson(uiJson, settingsFilePathB);
+                Assert.True(saveJsonResult.Succeeded);
+
+                var loadA = service.Load(settingsFilePathA);
+                var loadB = service.Load(settingsFilePathB);
+
+                Assert.True(loadA.Succeeded);
+                Assert.True(loadB.Succeeded);
+                Assert.Equal(scriptPathA, loadA.Settings.TaskScriptFilePath.GetValue());
+                Assert.Equal(listPathA, loadA.Settings.RevitFileListFilePath.GetValue());
+                Assert.Equal(scriptPathB, loadB.Settings.TaskScriptFilePath.GetValue());
+                Assert.Equal(listPathB, loadB.Settings.RevitFileListFilePath.GetValue());
+            }
+            finally
+            {
+                Directory.Delete(tempDirectoryPath, true);
+            }
+        }
+
+        [Fact]
+        public void BatchRunValidationService_ShouldRejectMissingRevitListInBatchMode()
+        {
+            var tempDirectoryPath = CreateTempDirectory();
+
+            try
+            {
+                var taskScriptPath = Path.Combine(tempDirectoryPath, "task.py");
+                File.WriteAllText(taskScriptPath, "# test");
+
+                var settings = new BatchRvtSettings();
+                settings.TaskScriptFilePath.SetValue(taskScriptPath);
+                settings.RevitProcessingOption.SetValue(BatchRvt.RevitProcessingOption.BatchRevitFileProcessing);
+                settings.RevitFileListFilePath.SetValue(Path.Combine(tempDirectoryPath, "missing-list.txt"));
+
+                var validationService = new BatchRunValidationService();
+                var validationResult = validationService.Validate(settings);
+
+                Assert.False(validationResult.IsValid);
+                Assert.Contains("ERROR: You must select an existing Revit File List!", validationResult.Errors);
+            }
+            finally
+            {
+                Directory.Delete(tempDirectoryPath, true);
+            }
+        }
+
+        [Fact]
+        public void BatchRunValidationService_ShouldAcceptValidPrimaryBatchInputs()
+        {
+            var tempDirectoryPath = CreateTempDirectory();
+
+            try
+            {
+                var taskScriptPath = Path.Combine(tempDirectoryPath, "task.py");
+                var revitListPath = Path.Combine(tempDirectoryPath, "files.txt");
+                File.WriteAllText(taskScriptPath, "# test");
+                File.WriteAllText(revitListPath, "C:/Models/Test.rvt");
+
+                var settings = new BatchRvtSettings();
+                settings.TaskScriptFilePath.SetValue(taskScriptPath);
+                settings.RevitProcessingOption.SetValue(BatchRvt.RevitProcessingOption.BatchRevitFileProcessing);
+                settings.RevitFileListFilePath.SetValue(revitListPath);
+                settings.EnableDataExport.SetValue(false);
+                settings.ExecutePreProcessingScript.SetValue(false);
+                settings.ExecutePostProcessingScript.SetValue(false);
+
+                var validationService = new BatchRunValidationService();
+                var validationResult = validationService.Validate(settings);
+
+                Assert.True(validationResult.IsValid);
+                Assert.Empty(validationResult.Errors);
+            }
+            finally
+            {
+                Directory.Delete(tempDirectoryPath, true);
+            }
+        }
+
+        [Fact]
+        public void BatchOutputPolicy_ShouldSuppressNonBatchOutputLines()
+        {
+            var outputPolicy = new BatchOutputPolicy();
+
+            var accepted = outputPolicy.TryFormatStandardOutput("this is not a BatchRvt line", out var formattedLine);
+
+            Assert.False(accepted);
+            Assert.Null(formattedLine);
+        }
+
+        [Fact]
+        public void BatchOutputPolicy_ShouldAcceptBatchOutputLines()
+        {
+            var outputPolicy = new BatchOutputPolicy();
+
+            var accepted = outputPolicy.TryFormatStandardOutput("16:30:13 : test", out var formattedLine);
+
+            Assert.True(accepted);
+            Assert.Equal("16:30:13 : test", formattedLine);
+        }
+
+        [Fact]
+        public void BatchOutputPolicy_ShouldFilterStandardErrorByVisibilityAndNoiseRules()
+        {
+            var outputPolicy = new BatchOutputPolicy();
+
+            var hiddenErrorAccepted = outputPolicy.TryFormatStandardError("runtime error", false, out var _);
+            var log4CplusAccepted = outputPolicy.TryFormatStandardError("log4cplus: startup", true, out var _);
+            var visibleErrorAccepted = outputPolicy.TryFormatStandardError("runtime error", true, out var formattedLine);
+
+            Assert.False(hiddenErrorAccepted);
+            Assert.False(log4CplusAccepted);
+            Assert.True(visibleErrorAccepted);
+            Assert.Equal("[ REVIT ERROR MESSAGE ] : runtime error", formattedLine);
+        }
+
+        [Fact]
+        public void BatchRunService_Stop_ShouldSucceed_WhenProcessIsNull()
+        {
+            var runService = new BatchRunService();
+
+            var stopResult = runService.Stop(null, killProcessTree: true);
+
+            Assert.True(stopResult.Succeeded);
+            Assert.Null(stopResult.Exception);
+        }
+
+        [Fact]
+        public void BatchRunService_Stop_ShouldTerminateRunningProcess()
+        {
+            var processStartInfo = new ProcessStartInfo("cmd.exe", "/c ping 127.0.0.1 -n 8 > nul")
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var process = Process.Start(processStartInfo);
+            Assert.NotNull(process);
+
+            var runService = new BatchRunService();
+            var stopResult = runService.Stop(process, killProcessTree: true);
+
+            Assert.True(stopResult.Succeeded);
+            process.WaitForExit(5000);
+            Assert.True(process.HasExited);
         }
 
         private static string CreateTempSettingsFile(string json)
