@@ -474,6 +474,25 @@ namespace Batch.Shared.Util.Tests
             Assert.True(process.HasExited);
         }
 
+        [Fact]
+        public void BatchUiPreflight_ShouldExposeLegacyWindowTitle()
+        {
+            Assert.Equal("Revit Batch Processor", BatchUiPreflight.WindowTitle);
+        }
+
+        [Fact]
+        public void BatchUiPreflight_ShouldBuildLegacyMissingAddinMessage()
+        {
+            var message = BatchUiPreflight.BuildMissingAddinErrorMessage();
+
+            Assert.Contains(
+                "ERROR: Could not detect the BatchRvt addin for any version of Revit installed on this machine!",
+                message);
+            Assert.Contains(
+                "You must first install the BatchRvt addin for at least one version of Revit.",
+                message);
+        }
+
         private static string CreateTempSettingsFile(string json)
         {
             var filePath = Path.GetTempFileName();

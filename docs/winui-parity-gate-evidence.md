@@ -23,9 +23,14 @@ Executed and passed:
 
 Test summary:
 
-- Total: 36
+- Total: 38
 - Failed: 0
-- Passed: 36
+- Passed: 38
+
+Additional parity completion in this pass:
+
+- Startup preflight parity (B1) is now implemented in both WinForms and WinUI via shared helper: [src/shared/Batch.Shared.Util/BatchUiPreflight.cs](src/shared/Batch.Shared.Util/BatchUiPreflight.cs#L6), [src/apps/Batch.App.Gui/Program.cs](src/apps/Batch.App.Gui/Program.cs#L38), [src/apps/Batch.App.Ui/App.xaml.cs](src/apps/Batch.App.Ui/App.xaml.cs#L18).
+- Run-state signaling parity (V8) is now implemented in WinUI with explicit state transitions and Running/Done semantics: [src/apps/Batch.App.Ui/MainWindow.xaml.cs](src/apps/Batch.App.Ui/MainWindow.xaml.cs#L20), [src/apps/Batch.App.Ui/MainWindow.xaml.cs](src/apps/Batch.App.Ui/MainWindow.xaml.cs#L540).
 
 ## Scenario results
 

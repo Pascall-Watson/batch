@@ -17,6 +17,14 @@ namespace Batch.App.Ui;
 
 public sealed class MainWindow : Window
 {
+    private enum RunUiState
+    {
+        Ready,
+        Running,
+        StopRequested,
+        Completed
+    }
+
     private readonly StringBuilder _outputBuilder = new();
     private readonly IBatchSettingsWorkflowService _settingsWorkflowService = new BatchSettingsWorkflowService();
     private readonly IBatchRunValidationService _runValidationService = new BatchRunValidationService();
@@ -48,7 +56,7 @@ public sealed class MainWindow : Window
         Closed += MainWindow_Closed;
 
         _settingsPathTextBox.Text = _settingsFilePath;
-        _stopButton.IsEnabled = false;
+        SetRunUiState(RunUiState.Ready);
 
         LoadCurrentSettings();
     }
@@ -370,8 +378,7 @@ public sealed class MainWindow : Window
         _batchRvtProcess.BeginOutputReadLine();
         _batchRvtProcess.BeginErrorReadLine();
 
-        _startButton.IsEnabled = false;
-        _stopButton.IsEnabled = true;
+        SetRunUiState(RunUiState.Running);
 
         SetStatus("Batch process started.");
     }
@@ -406,8 +413,8 @@ public sealed class MainWindow : Window
     {
         DispatcherQueue.TryEnqueue(() =>
         {
+            SetRunUiState(RunUiState.Completed);
             _startButton.IsEnabled = true;
-            _stopButton.IsEnabled = false;
             _batchRvtProcess = null;
             SetStatus("Batch process exited.");
         });
@@ -424,8 +431,8 @@ public sealed class MainWindow : Window
             AppendOutputLine("[ERROR] Failed to stop batch process: " + stopResult.Exception?.Message);
         }
 
-        _startButton.IsEnabled = true;
-        _stopButton.IsEnabled = false;
+        if (stopResult.Succeeded)
+            SetRunUiState(RunUiState.StopRequested);
 
         if (!silent)
             SetStatus("Batch process stop requested.");
@@ -528,6 +535,36 @@ public sealed class MainWindow : Window
     private void SetStatus(string message)
     {
         _statusTextBlock.Text = DateTime.Now.ToString("HH:mm:ss") + "  " + message;
+    }
+
+    private void SetRunUiState(RunUiState state)
+    {
+        switch (state)
+        {
+            case RunUiState.Ready:
+                _startButton.Content = "Start";
+                _startButton.IsEnabled = true;
+                _stopButton.IsEnabled = false;
+                break;
+
+            case RunUiState.Running:
+                _startButton.Content = "Running...";
+                _startButton.IsEnabled = false;
+                _stopButton.IsEnabled = true;
+                break;
+
+            case RunUiState.StopRequested:
+                _startButton.Content = "Running...";
+                _startButton.IsEnabled = false;
+                _stopButton.IsEnabled = false;
+                break;
+
+            case RunUiState.Completed:
+                _startButton.Content = "Done!";
+                _startButton.IsEnabled = true;
+                _stopButton.IsEnabled = false;
+                break;
+        }
     }
 
     private static string NormalizePathOrEmpty(string? path)
