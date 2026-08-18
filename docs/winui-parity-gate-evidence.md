@@ -18,6 +18,22 @@ Update: 2026-08-18 16:07 (interactive WinUI run)
   [src/shared/Batch.Shared.Util/Scripts27/revit_file_list.py](src/shared/Batch.Shared.Util/Scripts27/revit_file_list.py)
   [src/shared/Batch.Shared.Util/Scripts34/revit_file_list.py](src/shared/Batch.Shared.Util/Scripts34/revit_file_list.py)
 
+Update: 2026-08-18 17:03 (interactive WinForms comparison run)
+
+- WinForms processed the same 2 ACC cloud models in Revit 2025 with the same task script and completed successfully end-to-end.
+- Model 1 completed with 5 of 5 Datasmith view exports.
+- Model 2 completed with 5 of 5 Datasmith view exports.
+- Source log: `C:\Users\Wayne\AppData\Local\BatchRvt\BatchRvt_20260818_170341_508.log` (plain-text copy at `.txt` sibling path).
+- This run still printed the legacy comment-line warning block because it came from an older WinForms output copy before rebuilding. After this capture, WinForms Release was rebuilt and now contains the comment-line filter in:
+  [src/apps/Batch.App.Gui/bin/x64/Release/Scripts27/revit_file_list.py](src/apps/Batch.App.Gui/bin/x64/Release/Scripts27/revit_file_list.py)
+  [src/apps/Batch.App.Gui/bin/x64/Release/Scripts34/revit_file_list.py](src/apps/Batch.App.Gui/bin/x64/Release/Scripts34/revit_file_list.py)
+
+Update: 2026-08-18 17:12 (WinForms post-rebuild validation)
+
+- WinForms rerun against the rebuilt Release output no longer prints the `WARNING: The following Revit Files do not exist` comment-line block.
+- File list parsing now reports only the two intended cloud model entries before processing.
+- Source log: `C:\Users\Wayne\AppData\Local\BatchRvt\BatchRvt_20260818_171219_565.log`.
+
 Scope:
 
 - Execute the parity gate scenarios from [docs/winui-parity-checklist.md](docs/winui-parity-checklist.md).
@@ -59,7 +75,7 @@ Additional parity completion in this pass:
 | --- | --- | --- | --- |
 | 1. Load default settings and save without schema drift | PASS (service-level) | PASS (service-level) | [tests/Batch.Shared.Util.Tests/BatchRvtTests.cs](tests/Batch.Shared.Util.Tests/BatchRvtTests.cs#L269) validates save/load of settings JSON via shared workflow seam used by both UIs. |
 | 2. Modify task script/file list, save-as, reload, compare JSON outcomes | PASS (service-level) | PASS (service-level) | [tests/Batch.Shared.Util.Tests/BatchRvtTests.cs](tests/Batch.Shared.Util.Tests/BatchRvtTests.cs#L298) exercises WinForms-style model save and WinUI-style JSON save through shared seam. |
-| 3. Start batch run with valid settings and compare launch/status/completion | PARTIAL | PASS | WinUI interactive evidence now captured from 2026-08-18 16:07 run: 2 cloud models processed, each with 5/5 Twinmotion Datasmith exports, including full launch/open/run/close lifecycle. WinForms side remains pending interactive capture in the same environment. |
+| 3. Start batch run with valid settings and compare launch/status/completion | PASS | PASS | WinUI interactive evidence captured at 2026-08-18 16:07 and WinForms interactive comparison captured at 2026-08-18 17:03, both processing 2 cloud models with 5/5 Twinmotion Datasmith exports per model and full launch/open/run/close lifecycle. |
 | 4. Start run and stop mid-run; compare termination and feedback | PASS (process stop policy), PARTIAL (interactive capture) | PASS (process stop policy), PARTIAL (interactive capture) | [tests/Batch.Shared.Util.Tests/BatchRvtTests.cs](tests/Batch.Shared.Util.Tests/BatchRvtTests.cs#L458) verifies shared stop service termination; UI close-time parity logic is now aligned in code at [src/apps/Batch.App.Ui/MainWindow.xaml.cs](src/apps/Batch.App.Ui/MainWindow.xaml.cs#L280) and [src/apps/Batch.App.Gui/BatchRvtGuiForm.cs](src/apps/Batch.App.Gui/BatchRvtGuiForm.cs#L443). |
 | 5. Output filtering/status behavior with stdout/stderr noise | PASS | PASS | [tests/Batch.Shared.Util.Tests/BatchRvtTests.cs](tests/Batch.Shared.Util.Tests/BatchRvtTests.cs#L410) and [tests/Batch.Shared.Util.Tests/BatchRvtTests.cs](tests/Batch.Shared.Util.Tests/BatchRvtTests.cs#L432) validate shared output policy now consumed by both UIs. |
 
@@ -107,11 +123,11 @@ WinUI via `dotnet` host smoke output:
 
 - Scenario 1: PASS
 - Scenario 2: PASS
-- Scenario 3: PARTIAL
+- Scenario 3: PASS
 - Scenario 4: PARTIAL
 - Scenario 5: PASS
 
 Overall gate status:
 
 - PARTIAL PASS
-- Remaining blockers are interactive end-to-end comparison capture for scenario 3 and scenario 4 under a Revit-capable, policy-permitted environment using [docs/winui-parity-interactive-runbook.md](docs/winui-parity-interactive-runbook.md).
+- Remaining blocker is interactive end-to-end stop-flow comparison capture for scenario 4 under a Revit-capable, policy-permitted environment using [docs/winui-parity-interactive-runbook.md](docs/winui-parity-interactive-runbook.md).
