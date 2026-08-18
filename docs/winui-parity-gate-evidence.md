@@ -34,6 +34,12 @@ Update: 2026-08-18 17:12 (WinForms post-rebuild validation)
 - File list parsing now reports only the two intended cloud model entries before processing.
 - Source log: `C:\Users\Wayne\AppData\Local\BatchRvt\BatchRvt_20260818_171219_565.log`.
 
+Update: 2026-08-18 17:18 (WinUI post-rebuild validation)
+
+- WinUI rerun against the rebuilt Release output no longer prints the `WARNING: The following Revit Files do not exist` comment-line block.
+- File list parsing now reports only the two intended cloud model entries before processing.
+- Source log: `C:\Users\Wayne\AppData\Local\BatchRvt\BatchRvt_20260818_171831_133.log`.
+
 Scope:
 
 - Execute the parity gate scenarios from [docs/winui-parity-checklist.md](docs/winui-parity-checklist.md).
