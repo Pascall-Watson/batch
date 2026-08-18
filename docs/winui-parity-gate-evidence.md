@@ -7,6 +7,17 @@ Update: 2026-08-18
 - AppLocker unblock retest is now validated for WinUI build and direct `.exe` launch.
 - See [docs/winui-workflow-validation-2026-08-18.md](docs/winui-workflow-validation-2026-08-18.md) for exact commands and outputs.
 
+Update: 2026-08-18 16:07 (interactive WinUI run)
+
+- WinUI processed 2 ACC cloud models in Revit 2025 using task script `C:\Users\Wayne\Desktop\twinmotion_export\twinmotion_export.py`.
+- Model 1 completed with 5 of 5 Datasmith view exports.
+- Model 2 completed with 5 of 5 Datasmith view exports.
+- Run completed successfully end-to-end with host Revit session startup, cloud open, task execution, close, and clean process exit for both files.
+- Source log: `C:\Users\Wayne\AppData\Local\BatchRvt\BatchRvt_20260818_160744_390.log` (plain-text copy at `.txt` sibling path).
+- A pre-run warning block about non-existent files came from comment lines (`# ...`) in the file list template and is now filtered in parser code:
+  [src/shared/Batch.Shared.Util/Scripts27/revit_file_list.py](src/shared/Batch.Shared.Util/Scripts27/revit_file_list.py)
+  [src/shared/Batch.Shared.Util/Scripts34/revit_file_list.py](src/shared/Batch.Shared.Util/Scripts34/revit_file_list.py)
+
 Scope:
 
 - Execute the parity gate scenarios from [docs/winui-parity-checklist.md](docs/winui-parity-checklist.md).
@@ -48,7 +59,7 @@ Additional parity completion in this pass:
 | --- | --- | --- | --- |
 | 1. Load default settings and save without schema drift | PASS (service-level) | PASS (service-level) | [tests/Batch.Shared.Util.Tests/BatchRvtTests.cs](tests/Batch.Shared.Util.Tests/BatchRvtTests.cs#L269) validates save/load of settings JSON via shared workflow seam used by both UIs. |
 | 2. Modify task script/file list, save-as, reload, compare JSON outcomes | PASS (service-level) | PASS (service-level) | [tests/Batch.Shared.Util.Tests/BatchRvtTests.cs](tests/Batch.Shared.Util.Tests/BatchRvtTests.cs#L298) exercises WinForms-style model save and WinUI-style JSON save through shared seam. |
-| 3. Start batch run with valid settings and compare launch/status/completion | PARTIAL | PARTIAL | UI binary smoke launch evidence captured for both app outputs; full interactive run-status comparison is blocked by no UI automation and no Revit-hosted end-to-end execution in this session. |
+| 3. Start batch run with valid settings and compare launch/status/completion | PARTIAL | PASS | WinUI interactive evidence now captured from 2026-08-18 16:07 run: 2 cloud models processed, each with 5/5 Twinmotion Datasmith exports, including full launch/open/run/close lifecycle. WinForms side remains pending interactive capture in the same environment. |
 | 4. Start run and stop mid-run; compare termination and feedback | PASS (process stop policy), PARTIAL (interactive capture) | PASS (process stop policy), PARTIAL (interactive capture) | [tests/Batch.Shared.Util.Tests/BatchRvtTests.cs](tests/Batch.Shared.Util.Tests/BatchRvtTests.cs#L458) verifies shared stop service termination; UI close-time parity logic is now aligned in code at [src/apps/Batch.App.Ui/MainWindow.xaml.cs](src/apps/Batch.App.Ui/MainWindow.xaml.cs#L280) and [src/apps/Batch.App.Gui/BatchRvtGuiForm.cs](src/apps/Batch.App.Gui/BatchRvtGuiForm.cs#L443). |
 | 5. Output filtering/status behavior with stdout/stderr noise | PASS | PASS | [tests/Batch.Shared.Util.Tests/BatchRvtTests.cs](tests/Batch.Shared.Util.Tests/BatchRvtTests.cs#L410) and [tests/Batch.Shared.Util.Tests/BatchRvtTests.cs](tests/Batch.Shared.Util.Tests/BatchRvtTests.cs#L432) validate shared output policy now consumed by both UIs. |
 
