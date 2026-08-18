@@ -19,8 +19,6 @@
 //
 
 using System;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using Batch.Shared.Util;
 
@@ -37,15 +35,9 @@ internal static class Program
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
 
-        if (!RevitVersion.GetInstalledRevitVersions().Any())
+        if (!BatchUiPreflight.HasAnyInstalledBatchRvtAddin())
         {
-            var errorMessage = new StringBuilder();
-            errorMessage.AppendLine(
-                "ERROR: Could not detect the BatchRvt addin for any version of Revit installed on this machine!");
-            errorMessage.AppendLine();
-            errorMessage.AppendLine("You must first install the BatchRvt addin for at least one version of Revit.");
-
-            BatchRvtGuiForm.ShowErrorMessageBox(errorMessage.ToString());
+            BatchRvtGuiForm.ShowErrorMessageBox(BatchUiPreflight.BuildMissingAddinErrorMessage());
         }
         else
         {

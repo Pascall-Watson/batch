@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>Batch.App.Ui</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+    <EnableMsixTooling>false</EnableMsixTooling>
+    <AppxGeneratePriEnabled>true</AppxGeneratePriEnabled>
+    <AppxGeneratePrisForPortableLibrariesEnabled>true</AppxGeneratePrisForPortableLibrariesEnabled>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <!-- xunit.core.props sets IsTestProject=true in this repo; this project contains no tests -->
+    <IsTestProject>false</IsTestProject>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <OutputPath>bin\x64\Debug\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\shared\Batch.Shared.Util\Batch.Shared.Util.csproj" />
+    <ProjectReference Include="..\Batch.App.Cli\Batch.App.Cli.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Target Name="CopyCliOutput" AfterTargets="Build">
+    <PropertyGroup>
+      <CliOutputPath>$(MSBuildThisFileDirectory)..\Batch.App.Cli\bin\x64\$(Configuration)\</CliOutputPath>
+    </PropertyGroup>
+    <ItemGroup Condition="Exists('$(CliOutputPath)')">
+      <CliOutputFiles Include="$(CliOutputPath)**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(CliOutputFiles)"
+          DestinationFiles="@(CliOutputFiles->'$(OutDir)%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true"
+          Condition="'@(CliOutputFiles)' != ''" />
+  </Target>
+
+</Project>

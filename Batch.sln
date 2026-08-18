@@ -15,6 +15,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Batch.App.Gui", "src\apps\B
 		{B880DD15-184B-4CE2-86FC-08BAC05E0271} = {B880DD15-184B-4CE2-86FC-08BAC05E0271}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Batch.App.Ui", "src\apps\Batch.App.Ui\Batch.App.Ui.csproj", "{461CEA84-8E85-4793-A7BD-754FF3CBA22F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C877620C-DE32-455C-BF21-8F3E73E9DF68} = {C877620C-DE32-455C-BF21-8F3E73E9DF68}
+	EndProjectSection
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Batch.Shared.Util", "src\shared\Batch.Shared.Util\Batch.Shared.Util.csproj", "{B880DD15-184B-4CE2-86FC-08BAC05E0271}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Batch.Integration.Dynamo", "src\integrations\Batch.Integration.Dynamo\Batch.Integration.Dynamo.csproj", "{B2FED296-9EA0-41DD-BB2F-951D481F527B}"
@@ -68,6 +73,14 @@ Global
 		{97687640-0B4D-4E2A-8B77-6EB2CF0F51EC}.Release|Any CPU.Build.0 = Release|x64
 		{97687640-0B4D-4E2A-8B77-6EB2CF0F51EC}.Release|x64.ActiveCfg = Release|x64
 		{97687640-0B4D-4E2A-8B77-6EB2CF0F51EC}.Release|x64.Build.0 = Release|x64
+		{461CEA84-8E85-4793-A7BD-754FF3CBA22F}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{461CEA84-8E85-4793-A7BD-754FF3CBA22F}.Debug|Any CPU.Build.0 = Debug|x64
+		{461CEA84-8E85-4793-A7BD-754FF3CBA22F}.Debug|x64.ActiveCfg = Debug|x64
+		{461CEA84-8E85-4793-A7BD-754FF3CBA22F}.Debug|x64.Build.0 = Debug|x64
+		{461CEA84-8E85-4793-A7BD-754FF3CBA22F}.Release|Any CPU.ActiveCfg = Release|x64
+		{461CEA84-8E85-4793-A7BD-754FF3CBA22F}.Release|Any CPU.Build.0 = Release|x64
+		{461CEA84-8E85-4793-A7BD-754FF3CBA22F}.Release|x64.ActiveCfg = Release|x64
+		{461CEA84-8E85-4793-A7BD-754FF3CBA22F}.Release|x64.Build.0 = Release|x64
 		{B880DD15-184B-4CE2-86FC-08BAC05E0271}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{B880DD15-184B-4CE2-86FC-08BAC05E0271}.Debug|Any CPU.Build.0 = Debug|x64
 		{B880DD15-184B-4CE2-86FC-08BAC05E0271}.Debug|x64.ActiveCfg = Debug|x64

@@ -60,6 +60,7 @@ function Test-ShouldProcess {
     }
 
     return $true
+    }
 
 function Remove-ItemSafely {
     param(

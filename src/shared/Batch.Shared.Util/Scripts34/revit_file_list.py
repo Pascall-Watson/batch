@@ -33,11 +33,22 @@ def FirstOrDefault(items, default=None):
     return default
 
 
+def IsCommentRow(row):
+    firstValue = FirstOrDefault(row)
+    return (
+        not str.IsNullOrWhiteSpace(firstValue)
+        and firstValue.TrimStart().StartsWith("#")
+    )
+
+
 def GetRevitFileListData(rows):
     return [
         RevitFilePathData(row[0], row[1:])
         for row in rows
-        if not str.IsNullOrWhiteSpace(FirstOrDefault(row))  # Ignore rows where the first column is empty.
+        if (
+            not str.IsNullOrWhiteSpace(FirstOrDefault(row))  # Ignore rows where the first column is empty.
+            and not IsCommentRow(row)  # Ignore rows where the first column starts with '#'.
+        )
     ]
 
 
