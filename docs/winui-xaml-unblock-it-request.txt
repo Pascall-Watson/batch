@@ -1,0 +1,88 @@
+Subject: Request to unblock WinUI build toolchain (XamlCompiler + MakePri) for local build (AppLocker allow rule)
+
+Hello IT Security Team,
+
+I need an AppLocker allow exception to build a local WinUI project.
+
+Current failures:
+- Program blocked: C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net472\XamlCompiler.exe
+- Build step: MarkupCompilePass1 in Microsoft.UI.Xaml.Markup.Compiler.interop.targets
+- Error shown by build:
+  This program is blocked by group policy. For more information, contact your system administrator.
+
+- Program blocked: C:\Users\Wayne\.nuget\packages\microsoft.windows.sdk.buildtools\10.0.26100.4654\bin\10.0.26100.0\x64\makepri.exe
+- Build step: PRI generation in Microsoft.Windows.SDK.BuildTools.MSIX.MrtCore.PriGen.targets
+- Error shown by build:
+  The specified task executable "MakePri.exe" could not be run ... This program is blocked by group policy.
+
+- Runtime symptom when PRI generation cannot be completed:
+  WinUI window opens with unexpected shell error and COMException (Unspecified error) around missing Acrylic resource keys.
+
+Repro command:
+- dotnet build c:\Users\Wayne\Documents\GitHub\batch\src\apps\Batch.App.Ui\Batch.App.Ui.csproj -c Debug -p:Platform=x64 -v:m
+- dotnet build c:\Users\Wayne\Documents\GitHub\batch\src\apps\Batch.App.Ui\Batch.App.Ui.csproj -c Release -p:Platform=x64 -p:AppxGeneratePriEnabled=true -p:AppxGeneratePrisForPortableLibrariesEnabled=true -v:m
+
+Please apply ONE of the following allow-rule variants:
+
+OPTION A: Path rule variant (fastest)
+- Rule collection: Executable Rules
+- Action: Allow
+- User/Group: <my AD user> (or Developers group)
+- Paths to allow:
+  1) %USERPROFILE%\.nuget\packages\microsoft.windowsappsdk.winui\*\tools\net472\XamlCompiler.exe
+  2) %USERPROFILE%\.nuget\packages\microsoft.windowsappsdk.winui\*\tools\net472\*
+  3) %USERPROFILE%\.nuget\packages\microsoft.windowsappsdk.winui\*\tools\net6.0\*
+  4) %USERPROFILE%\.nuget\packages\microsoft.windows.sdk.buildtools\*\bin\*\x64\makepri.exe
+  5) %USERPROFILE%\.nuget\packages\microsoft.windows.sdk.buildtools\*\bin\*\x64\*
+
+- If DLL rules are enforced in your policy, apply equivalent Allow rules in DLL Rules for paths (2), (3), and (5).
+
+OPTION B: Publisher rule variant (durable)
+- Rule collection: Executable Rules
+- Action: Allow
+- User/Group: <my AD user> (or Developers group)
+- Reference file:
+  C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net472\XamlCompiler.exe
+- Publisher certificate subject:
+  CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+- Issuer:
+  CN=Microsoft Code Signing PCA 2024, O=Microsoft Corporation, C=US
+- Product name:
+  Windows App SDK
+- File description:
+  Microsoft.UI.Xaml.Markup.Compiler
+- File name:
+  XamlCompiler.exe
+- Version range:
+  >= 3.0.0.0 (no upper limit)
+
+- If DLL rules are enforced, also add a DLL Publisher Allow rule for the same publisher under:
+  %USERPROFILE%\.nuget\packages\microsoft.windowsappsdk.winui\*\tools\net472\*
+  %USERPROFILE%\.nuget\packages\microsoft.windowsappsdk.winui\*\tools\net6.0\*
+
+- Also add a Publisher Allow rule for MakePri with:
+  Reference file:
+  C:\Users\Wayne\.nuget\packages\microsoft.windows.sdk.buildtools\10.0.26100.4654\bin\10.0.26100.0\x64\makepri.exe
+  Publisher certificate subject:
+  CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US
+  Issuer:
+  CN=Microsoft Windows Code Signing PCA 2024, O=Microsoft Corporation, C=US
+  Product name:
+  Microsoft® Windows® Operating System
+  File description:
+  Command line tool for creating PRI files
+  File name:
+  Makepri.exe
+  Version range:
+  >= 10.0.26100.0 (no upper limit)
+
+Post-change step requested:
+- Run gpupdate /force (or reboot) on my machine so the new policy is applied.
+
+Validation criteria:
+- The build commands above complete without:
+  This program is blocked by group policy
+- WinUI executable launch does not show:
+  ERROR: An unexpected WinUI shell error occurred ... Unspecified error
+
+Thanks.

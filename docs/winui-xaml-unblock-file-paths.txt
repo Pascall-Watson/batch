@@ -1,0 +1,31 @@
+C:\Program Files\dotnet\dotnet.exe
+C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin\MSBuild.exe
+C:\Users\Wayne\.nuget\packages\microsoft.windows.sdk.buildtools\10.0.26100.4654\bin\10.0.26100.0\x64\makepri.exe
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\buildTransitive\Microsoft.UI.Xaml.Markup.Compiler.interop.targets
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net472\Microsoft.Bcl.AsyncInterfaces.dll
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net472\Microsoft.Build.dll
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net472\Microsoft.Build.Framework.dll
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net472\Microsoft.Build.Utilities.Core.dll
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net472\Microsoft.UI.Xaml.Markup.Compiler.dll
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net472\Microsoft.UI.Xaml.Markup.Compiler.IO.dll
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net472\Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop.dll
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net472\System.Buffers.dll
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net472\System.Collections.Immutable.dll
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net472\System.Memory.dll
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net472\System.Numerics.Vectors.dll
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net472\System.Reflection.Metadata.dll
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net472\System.Runtime.CompilerServices.Unsafe.dll
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net472\System.Text.Encodings.Web.dll
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net472\System.Text.Json.dll
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net472\System.Threading.Tasks.Dataflow.dll
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net472\System.Threading.Tasks.Extensions.dll
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net472\XamlCompiler.exe
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net472\XamlCompiler.exe.config
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net6.0\Microsoft.Bcl.AsyncInterfaces.dll
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net6.0\Microsoft.UI.Xaml.Markup.Compiler.dll
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net6.0\Microsoft.UI.Xaml.Markup.Compiler.IO.dll
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net6.0\Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop.dll
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net6.0\System.Runtime.CompilerServices.Unsafe.dll
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net6.0\System.Text.Encodings.Web.dll
+C:\Users\Wayne\.nuget\packages\microsoft.windowsappsdk.winui\2.2.1\tools\net6.0\System.Text.Json.dll
+C:\Users\Wayne\Documents\GitHub\batch\src\apps\Batch.App.Ui\Batch.App.Ui.csproj

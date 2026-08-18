@@ -2,13 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text;
 using Batch.Shared.Util;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Text;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -19,17 +17,6 @@ namespace Batch.App.Ui;
 
 public sealed class MainWindow : Window
 {
-    private const uint MB_YESNOCANCEL = 0x00000003;
-    private const uint MB_YESNO = 0x00000004;
-    private const uint MB_ICONQUESTION = 0x00000020;
-    private const uint MB_ICONASTERISK = 0x00000040;
-    private const uint MB_DEFBUTTON1 = 0x00000000;
-    private const uint MB_DEFBUTTON3 = 0x00000200;
-
-    private const int IDYES = 6;
-    private const int IDNO = 7;
-    private const int IDCANCEL = 2;
-
     private enum RunUiState
     {
         Ready,
@@ -63,19 +50,17 @@ public sealed class MainWindow : Window
     private BatchRvtSettings _settings = new();
     private Process? _batchRvtProcess;
     private string _settingsFilePath = BatchRvtSettings.GetDefaultSettingsFilePath();
-    private bool _skipProcessTerminationOnClose;
 
     public MainWindow()
     {
         Title = "Revit Batch Processor - WinUI Shell";
+
         Content = BuildContent();
 
         Closed += MainWindow_Closed;
-        AppWindow.Closing += AppWindow_Closing;
 
         _settingsPathTextBox.Text = _settingsFilePath;
         SetRunUiState(RunUiState.Ready);
-
         LoadCurrentSettings();
     }
 
@@ -84,7 +69,9 @@ public sealed class MainWindow : Window
         var rootGrid = new Grid
         {
             Padding = new Thickness(16),
-            RowSpacing = 12
+            RowSpacing = 12,
+            RequestedTheme = ElementTheme.Light,
+            Background = new SolidColorBrush(Colors.White)
         };
 
         rootGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -372,41 +359,8 @@ public sealed class MainWindow : Window
         return rootGrid;
     }
 
-    private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
-    {
-        if (_batchRvtProcess is null || _batchRvtProcess.HasExited)
-            return;
-
-        var closeMessage = "Do you want to terminate the currently running task?";
-        var closeResponse = ShowMessageBox(closeMessage, MB_YESNOCANCEL | MB_ICONASTERISK | MB_DEFBUTTON3);
-
-        if (closeResponse == IDCANCEL)
-        {
-            args.Cancel = true;
-            return;
-        }
-
-        if (closeResponse == IDYES)
-        {
-            StopRunningProcess(silent: false, killProcessTree: false);
-        }
-        else if (closeResponse == IDNO)
-        {
-            _skipProcessTerminationOnClose = true;
-        }
-
-        var saveMessage = "Do you want to save the current settings as default?";
-        var saveResponse = ShowMessageBox(saveMessage, MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON1);
-
-        if (saveResponse == IDYES)
-            SaveCurrentSettings();
-    }
-
     private void MainWindow_Closed(object sender, WindowEventArgs args)
     {
-        if (_skipProcessTerminationOnClose)
-            return;
-
         StopRunningProcess(silent: true, killProcessTree: false);
     }
 
@@ -716,9 +670,21 @@ public sealed class MainWindow : Window
 
     private void UpdatePrimaryWorkflowEditors()
     {
-        _taskScriptEditorTextBox.Text = _settings.TaskScriptFilePath.GetValue() ?? string.Empty;
-        _revitFileListEditorTextBox.Text = _settings.RevitFileListFilePath.GetValue() ?? string.Empty;
-        _processingModeEditorComboBox.SelectedItem = _settings.RevitProcessingOption.GetValue();
+        try
+        {
+            _taskScriptEditorTextBox.Text = _settings.TaskScriptFilePath.GetValue() ?? string.Empty;
+            _revitFileListEditorTextBox.Text = _settings.RevitFileListFilePath.GetValue() ?? string.Empty;
+
+            var processingModeIndex = (int)_settings.RevitProcessingOption.GetValue();
+            if (processingModeIndex < 0 || processingModeIndex >= _processingModeEditorComboBox.Items.Count)
+                processingModeIndex = 0;
+
+            _processingModeEditorComboBox.SelectedIndex = processingModeIndex;
+        }
+        catch (Exception ex)
+        {
+            AppendOutputLine("[WARNING] Failed to update primary workflow editor fields: " + ex.Message);
+        }
     }
 
     private bool TryApplyPrimaryWorkflowFieldsToSettingsJson(out string errorMessage)
@@ -740,8 +706,11 @@ public sealed class MainWindow : Window
             settings.TaskScriptFilePath.SetValue(NormalizePathOrEmpty(_taskScriptEditorTextBox.Text));
             settings.RevitFileListFilePath.SetValue(NormalizePathOrEmpty(_revitFileListEditorTextBox.Text));
 
-            if (_processingModeEditorComboBox.SelectedItem is BatchRvt.RevitProcessingOption processingOption)
-                settings.RevitProcessingOption.SetValue(processingOption);
+            if (_processingModeEditorComboBox.SelectedIndex >= 0)
+            {
+                var selectedProcessingMode = (BatchRvt.RevitProcessingOption)_processingModeEditorComboBox.SelectedIndex;
+                settings.RevitProcessingOption.SetValue(selectedProcessingMode);
+            }
 
             var mergedSaveResult = _settingsWorkflowService.SaveSettings(settings, tempSettingsFilePath);
             if (!mergedSaveResult.Succeeded || mergedSaveResult.Settings == null)
@@ -841,6 +810,7 @@ public sealed class MainWindow : Window
         }
     }
 
+
     private TPicker InitializePickerWithWindow<TPicker>(TPicker picker)
         where TPicker : class
     {
@@ -849,12 +819,4 @@ public sealed class MainWindow : Window
         return picker;
     }
 
-    private int ShowMessageBox(string message, uint options)
-    {
-        var windowHandle = WindowNative.GetWindowHandle(this);
-        return MessageBox(windowHandle, message, BatchUiPreflight.WindowTitle, options);
-    }
-
-    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-    private static extern int MessageBox(IntPtr hWnd, string lpText, string lpCaption, uint uType);
 }

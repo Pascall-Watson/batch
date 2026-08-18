@@ -2,6 +2,11 @@
 
 Date: 2026-08-15
 
+Update: 2026-08-18
+
+- AppLocker unblock retest is now validated for WinUI build and direct `.exe` launch.
+- See [docs/winui-workflow-validation-2026-08-18.md](docs/winui-workflow-validation-2026-08-18.md) for exact commands and outputs.
+
 Scope:
 
 - Execute the parity gate scenarios from [docs/winui-parity-checklist.md](docs/winui-parity-checklist.md).
@@ -9,8 +14,8 @@ Scope:
 
 Environment constraints observed:
 
-- Corporate AppLocker blocked direct launch of [src/apps/Batch.App.Ui/bin/x64/Release/net10.0-windows10.0.19041.0/Batch.App.Ui.exe](src/apps/Batch.App.Ui/bin/x64/Release/net10.0-windows10.0.19041.0/Batch.App.Ui.exe).
-- WinUI smoke execution was performed via `dotnet` host against the built `.dll`.
+- At 2026-08-15 capture time, corporate AppLocker blocked direct launch of [src/apps/Batch.App.Ui/bin/x64/Release/net10.0-windows10.0.19041.0/Batch.App.Ui.exe](src/apps/Batch.App.Ui/bin/x64/Release/net10.0-windows10.0.19041.0/Batch.App.Ui.exe).
+- At 2026-08-15 capture time, WinUI smoke execution was performed via `dotnet` host against the built `.dll`.
 - Full interactive UI automation (click/edit/start/stop status capture) was not available in this terminal-only run.
 - Interactive parity capture process is documented in [docs/winui-parity-interactive-runbook.md](docs/winui-parity-interactive-runbook.md), with evidence recording template at [docs/winui-parity-interactive-capture-template.md](docs/winui-parity-interactive-capture-template.md).
 - Active capture artifact for this branch/session is initialized at [docs/winui-parity-interactive-capture-2026-08-15.md](docs/winui-parity-interactive-capture-2026-08-15.md), generated via [scripts/New-WinUiParityInteractiveCapture.ps1](scripts/New-WinUiParityInteractiveCapture.ps1).
