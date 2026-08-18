@@ -31,7 +31,9 @@ param()
 $ErrorActionPreference = 'Continue'
 
 # --- Safety: Revit must be closed -------------------------------------------------
-$revitProcesses = Get-Process -Name 'Revit', 'RevitAccelerator' -ErrorAction SilentlyContinue
+# Note: RevitAccelerator is a background preload service and does not lock addin
+# files, so it is intentionally not checked here.
+$revitProcesses = Get-Process -Name 'Revit' -ErrorAction SilentlyContinue
 if ($revitProcesses) {
     Write-Warning 'Revit is currently running. Close all Revit instances before running this script.'
     $revitProcesses | ForEach-Object { Write-Warning ("  PID {0}: {1}" -f $_.Id, $_.ProcessName) }
