@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net48;net10.0-windows</TargetFrameworks>
+    <TargetFrameworks>net48;net8.0-windows;net10.0-windows</TargetFrameworks>
     <OutputType>Library</OutputType>
     <RootNamespace>Batch.Shared.Util</RootNamespace>
     <AssemblyName>Batch.Shared.Util</AssemblyName>
@@ -31,10 +31,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Scripts27\**\*.py">
+    <Content Include="Scripts27\**\*.py" Condition="'$(TargetFramework)' != 'net10.0-windows'">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Scripts34\**\*.py">
+    <Content Include="Scripts34\**\*.py" Condition="'$(TargetFramework)' == 'net10.0-windows'">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

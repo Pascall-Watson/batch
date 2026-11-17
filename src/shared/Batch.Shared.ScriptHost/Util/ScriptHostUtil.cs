@@ -45,6 +45,10 @@ public static class ScriptHostUtil
         if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(ORCHESTRATION_MARKER_ENV_VAR)))
             return;
 
+        if (scriptsFolderName != ScriptUtil.ScriptsFolderName)
+            throw new InvalidOperationException("Incompatible script-host payload: expected " +
+                ScriptUtil.ScriptsFolderName + ", requested " + scriptsFolderName + ". Reinstall the matching add-in.");
+
         var pluginFullFolderPath = Path.GetFullPath(pluginFolderPath);
         var batchRvtScriptsFolderPath = Path.Combine(pluginFullFolderPath, scriptsFolderName);
         var scriptHostFilePath = Path.Combine(batchRvtScriptsFolderPath, BatchScriptHostFilename);

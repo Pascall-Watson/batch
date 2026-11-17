@@ -78,7 +78,7 @@ Revit API assemblies are restored from NuGet (`Nice3point.Revit.Api.RevitAPI` / 
 | Primary language | C# | Legacy project files for the apps; SDK-style projects for the add-ins and shared libraries. |
 | Desktop framework | Windows Forms | Used by the `Batch.App.Gui` application. |
 | Apps runtime | .NET Framework 4.8 | `Batch.App.Gui`, `Batch.App.Cli`, and `Batch.Integration.Dynamo`. |
-| Shared libraries | `net48` + `net10.0-windows` | `Batch.Shared.Util` and `Batch.Shared.ScriptHost` multi-target both runtimes. |
+| Shared libraries | `net48`, `net8.0-windows`, `net10.0-windows` | Native shared-library target for each add-in runtime; no .NET Framework fallback for Revit 2025/2026. |
 | Script execution | IronPython 2.7.12 / 3.4.2 | Engine selected per Revit version; see the matrix above. |
 | Visual scripting | Dynamo (version tied to Revit) | Runs `.dyn` workspaces via the Dynamo for Revit build installed for the target Revit version. |
 | Data input | `.txt`, `.xlsx` | Text files contain one model path per line; Excel files use the first column. |
@@ -138,6 +138,25 @@ During a successful build, each add-in project deploys its files to the matching
 ```powershell
 msbuild .\Batch.sln /p:Configuration=Release /p:Platform=x64 /p:EnableAddinDeployment=false
 ```
+
+### Validate Python Engine Compatibility Without Revit
+
+After the Release x64 build above:
+
+```powershell
+dotnet test tests/Batch.Shared.Util.Tests/Batch.Shared.Util.Tests.csproj -c Release --no-build -p:EnableAddinDeployment=false
+dotnet build tests/Batch.ScriptHost.Compatibility/Batch.ScriptHost.Compatibility.csproj -c Release -p:EnableAddinDeployment=false
+./scripts/Test-ScriptHostCompatibility.ps1 -Configuration Release
+powershell.exe -NoProfile -File ./scripts/Test-PythonPayload.Regression.ps1 -Configuration Release
+```
+
+The standalone probe uses the actual engines and shared assemblies from each add-in's output. It compiles every matching host script **without executing host/task scripts**, checks shared-library targets and engine/DLR bindings, imports the matching standard library with isolated search paths, and verifies that Python 3 rejects the Python 2 host. It does not start Revit, open models, or validate Revit API/task behaviour. See [probe details](tests/Batch.ScriptHost.Compatibility/README.md).
+
+IronPython ownership is centralized in `Batch.Shared.ScriptHost`: `net48` and `net8.0-windows` use IronPython 2.7.12 / DLR 1.3.1 with the embedded Python 2 standard library and `Scripts27`; `net10.0-windows` uses IronPython 3.4.2 / DLR 1.3.5 with the packaged loose standard library and `Scripts34`. The apps remain Python 2.7. Existing Python 2 task scripts are not converted.
+
+The installer wrapper, direct Inno compiler invocation, and release workflow validate the GUI and per-year add-in sources before packaging. Validation requires the corresponding Release x64 shared outputs, restored package assets and package cache; it rejects wrong engine/DLR binaries, wrong shared targets, missing/extra host modules, opposite-engine script folders and nested framework outputs. Rebuild the complete solution rather than combining files from different builds. Installer upgrades replace application-owned Python folders to avoid retaining old host modules; keep user task scripts outside those folders.
+
+Packages containing mismatched engines/scripts or the old .NET Framework fallback for Revit 2025/2026 should be replaced as a complete matching app/add-in installation, not repaired by copying a single DLL. A screenshot does not establish which package is installed: compare the actual CLI path, per-year add-in, shared libraries, engine/DLR versions and script files on the affected machines. See [investigation and validation notes](tests/Batch.ScriptHost.Compatibility/Investigation.md).
 
 ## Usage
 

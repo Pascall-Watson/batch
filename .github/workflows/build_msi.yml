@@ -81,6 +81,15 @@ jobs:
         run: |
             dotnet test "tests/Batch.Shared.Util.Tests/Batch.Shared.Util.Tests.csproj" --configuration Release --no-build -p:EnableAddinDeployment=false -v minimal
 
+      - name: Verify Python payload compatibility
+        shell: pwsh
+        run: |
+            dotnet build tests/Batch.ScriptHost.Compatibility/Batch.ScriptHost.Compatibility.csproj -c Release -p:EnableAddinDeployment=false
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            ./scripts/Test-ScriptHostCompatibility.ps1 -Configuration Release
+            powershell.exe -NoProfile -File ./scripts/Test-PythonPayload.Regression.ps1 -Configuration Release
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Verify installer sources exist
         shell: pwsh
         run: |
