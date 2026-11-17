@@ -1,5 +1,5 @@
 #define AppName "Revit Batch Processor"
-#define AppVersion "2.3.2.0"
+#define AppVersion "2.3.3.0"
 
 ; Fail even when ISCC is invoked directly rather than through the wrapper/CI.
 #define PythonPayloadCheck AddBackslash(SourcePath) + "..\..\scripts\Test-PythonPayload.ps1"
@@ -19,7 +19,7 @@ SetupLogging=True
 ArchitecturesInstallIn64BitMode=x64compatible
 ArchitecturesAllowed=x64compatible
 DefaultGroupName=Revit Batch Processor
-OutputBaseFilename=Pascall-Watson-RevitBatchProcessor-2.3.2.0-Setup
+OutputBaseFilename=Pascall-Watson-RevitBatchProcessor-2.3.3.0-Setup
 OutputDir=Output
 
 ; Remove only application-owned Python payloads before copying an upgrade.
@@ -54,6 +54,7 @@ Source: "..\..\src\addins\Batch.AddIn.2027\bin\x64\Release\*"; DestDir: "{userap
 Source: "..\..\src\addins\Batch.AddIn.2027\BatchRvtAddin2027.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2027"; Flags: ignoreversion
 [Icons]
 Name: "{group}\Revit Batch Processor (GUI)"; Filename: "{app}\Batch.App.Gui.exe"; WorkingDir: "{app}"
+
 
 
 
