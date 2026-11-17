@@ -6,6 +6,12 @@ from the solution, using an already provisioned SDK/reference assemblies. Target
 references; automatic .NET Framework reference-assembly package acquisition is
 disabled. The .NET Framework 4.8 targeting pack must already be available.
 This project disables add-in deployment and does not change the solution.
+The [payload-validator regression tests](../../scripts/Test-PythonPayload.Regression.ps1)
+exercise optional GUI engine DLLs (absent, correct and incompatible), extra/hidden
+standard-library files, a shadow package, same-count replacement, missing files
+and modified hashes. They use isolated temporary fixtures and cached dependencies,
+never changing actual build outputs or deployed folders. Run them with Windows
+PowerShell after a Release x64 solution build; the release workflow runs them too.
 The modern probes use the Windows Desktop shared framework, just like the add-ins;
 its framework assemblies (including System.CodeDom) are intentionally not copied
 into the payload. No new test framework or engine packages are introduced.

@@ -147,6 +147,7 @@ After the Release x64 build above:
 dotnet test tests/Batch.Shared.Util.Tests/Batch.Shared.Util.Tests.csproj -c Release --no-build -p:EnableAddinDeployment=false
 dotnet build tests/Batch.ScriptHost.Compatibility/Batch.ScriptHost.Compatibility.csproj -c Release -p:EnableAddinDeployment=false
 ./scripts/Test-ScriptHostCompatibility.ps1 -Configuration Release
+powershell.exe -NoProfile -File ./scripts/Test-PythonPayload.Regression.ps1 -Configuration Release
 ```
 
 The standalone probe uses the actual engines and shared assemblies from each add-in's output. It compiles every matching host script **without executing host/task scripts**, checks shared-library targets and engine/DLR bindings, imports the matching standard library with isolated search paths, and verifies that Python 3 rejects the Python 2 host. It does not start Revit, open models, or validate Revit API/task behaviour. See [probe details](tests/Batch.ScriptHost.Compatibility/README.md).

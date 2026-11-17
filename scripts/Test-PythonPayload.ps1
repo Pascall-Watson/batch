@@ -47,15 +47,16 @@ foreach ($year in @('App', 2024, 2025, 2026, 2027)) {
     if (-not $target) { throw "$year missing restored target graph" }
     foreach ($package in $target.Value.PSObject.Properties | Where-Object { $_.Name -match '^(IronPython|DynamicLanguageRuntime)/' }) {
         foreach ($asset in $package.Value.runtime.PSObject.Properties | Where-Object { $_.Name.EndsWith('.dll') }) {
-            # Legacy desktop apps copy only referenced engine modules, unlike SDK add-ins.
-            if ($year -eq 'App' -and [IO.Path]::GetFileName($asset.Name) -in @('IronPython.SQLite.dll', 'IronPython.Wpf.dll')) { continue }
+            $destination = Join-Path $payload ([IO.Path]::GetFileName($asset.Name))
+            # Legacy desktop apps may omit these modules, but must never ship stale copies.
+            if ($year -eq 'App' -and [IO.Path]::GetFileName($asset.Name) -in @('IronPython.SQLite.dll', 'IronPython.Wpf.dll') -and
+                -not (Test-Path -LiteralPath $destination -PathType Leaf)) { continue }
             $restoredPath = $null
             foreach ($folder in $assets.packageFolders.PSObject.Properties.Name) {
                 $candidate = Join-Path (Join-Path $folder $package.Name.ToLowerInvariant()) $asset.Name
                 if (Test-Path $candidate) { $restoredPath = $candidate; break }
             }
             if (-not $restoredPath) { throw "$year missing restored asset $($asset.Name)" }
-            $destination = Join-Path $payload ([IO.Path]::GetFileName($asset.Name))
             if ((Get-PayloadHash $restoredPath) -cne (Get-PayloadHash $destination)) {
                 throw "$year incompatible engine/DLR asset $destination"
             }
@@ -74,7 +75,23 @@ foreach ($year in @('App', 2024, 2025, 2026, 2027)) {
         if (-not (Test-Path (Join-Path $payload 'lib/os.py'))) { throw '2027 missing Python 3 standard library' }
         $library = $assets.libraries.PSObject.Properties['IronPython.StdLib/3.4.2'].Value
         if (-not $library) { throw '2027 missing restored Python 3 standard library package' }
-        foreach ($file in $library.files | Where-Object { $_ -like 'contentFiles/any/any/lib/*' }) {
+        $libraryFiles = @($library.files | Where-Object { $_ -like 'contentFiles/any/any/lib/*' })
+        if ($libraryFiles.Count -eq 0) { throw '2027 empty restored Python 3 standard library manifest' }
+        $expectedLibraryPaths = @{}
+        foreach ($file in $libraryFiles) {
+            $relative = $file.Substring('contentFiles/any/any/lib/'.Length).Replace('\', '/')
+            $expectedLibraryPaths[$relative] = $true
+        }
+        $libRoot = (Join-Path $payload 'lib').TrimEnd([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)
+        $payloadLibraryFiles = @(Get-ChildItem -LiteralPath $libRoot -File -Recurse -Force)
+        foreach ($payloadFile in $payloadLibraryFiles) {
+            $relative = $payloadFile.FullName.Substring($libRoot.Length + 1).Replace('\', '/')
+            if (-not $expectedLibraryPaths.ContainsKey($relative)) {
+                throw "2027 unmanifested standard-library file $relative"
+            }
+        }
+        if ($payloadLibraryFiles.Count -ne $expectedLibraryPaths.Count) { throw '2027 missing standard-library files' }
+        foreach ($file in $libraryFiles) {
             $restoredPath = $null
             foreach ($folder in $assets.packageFolders.PSObject.Properties.Name) {
                 $candidate = Join-Path (Join-Path $folder $library.path) $file

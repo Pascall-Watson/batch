@@ -69,9 +69,27 @@ tools and cached packages were used; no software was installed.
 
 ## Limits and separate observations
 
+### PR review follow-up
+
+Optional GUI SQLite/Wpf engine assemblies are now allowed to be absent but are
+hash-checked against the restored Python 2 runtime assets whenever present.
+The Python 3 library must have exactly the restored file inventory, including
+hidden files; extra modules, shadow packages and non-Python files are rejected
+before per-file hash validation.
+
+All **15 isolated-fixture payload regressions passed on Windows PowerShell 5.1
+and PowerShell 7**. The four actual-engine probes, five installer-source payload
+checks, 27 utility tests and Inno /O- validation were rerun and passed. No C# source
+changed in this follow-up, so the existing built outputs were used. Fixtures were
+removed afterwards; actual build outputs and deployed folders were not modified.
+
+### Runtime and installation boundaries
+
 These are parsing/stdlib/assembly-binding tests, not Revit runtime tests. No Revit
 process, model, task cleanup, shared network script or deployed folder was touched.
-No commit, push or release was performed. Installer upgrade execution, add-in load
+The initial investigation performed no commit, push or release; subsequent commits
+and pushes were explicitly requested for PR #32. No release was published.
+Installer upgrade execution, add-in load
 contexts alongside other Revit add-ins, API imports and real tasks remain untested.
 The runner checks handler source selection, not the compiled handler's IL.
 
