@@ -9,6 +9,15 @@
         <RevitAddinDeploymentRoot Condition="'$(RevitAddinDeploymentRoot)' == ''">$(APPDATA)\Autodesk\Revit\Addins</RevitAddinDeploymentRoot>
     </PropertyGroup>
 
+    <!-- A flat add-in output must not retain scripts/stdlib from a previous engine. -->
+    <Target Name="RemoveIncompatiblePythonPayload" BeforeTargets="PrepareForBuild"
+            Condition="'$(RevitAddinVersion)' != '' or '$(MSBuildProjectName)' == 'Batch.App.Gui' or '$(MSBuildProjectName)' == 'Batch.App.Cli'">
+        <RemoveDir Directories="$(OutputPath)Scripts34;$(OutputPath)lib"
+                   Condition="'$(RevitAddinVersion)' != '2027'" />
+        <RemoveDir Directories="$(OutputPath)Scripts27"
+                   Condition="'$(RevitAddinVersion)' == '2027'" />
+    </Target>
+
     <Target Name="DeployRevitAddin"
             AfterTargets="PostBuildEvent"
             Condition="'$(EnableAddinDeployment)' == 'true' and '$(RevitAddinVersion)' != ''">

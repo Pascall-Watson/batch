@@ -33,6 +33,12 @@ namespace Batch.Shared.ScriptHost;
 
 public static class ScriptUtil
 {
+#if NET10_0_OR_GREATER
+    public const string ScriptsFolderName = "Scripts34";
+#else
+    public const string ScriptsFolderName = "Scripts27";
+#endif
+
 #if !NET10_0_OR_GREATER
     private const string PYTHON_LIB_ZIP_NAME = "python_27_lib.zip";
 #endif
@@ -45,6 +51,8 @@ public static class ScriptUtil
         // directory to the engine's search paths.
         var assemblyDir = Path.GetDirectoryName(typeof(ScriptUtil).Assembly.Location);
         var libPath = Path.Combine(assemblyDir!, "lib");
+        if (!File.Exists(Path.Combine(libPath, "os.py")))
+            throw new DirectoryNotFoundException("IronPython 3.4 standard library is missing: " + libPath);
         AddSearchPaths(scope.Engine, new[] { libPath });
 #else
         var thisAssembly = typeof(ScriptUtil).Assembly;
